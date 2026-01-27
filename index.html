@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>홈페이지</title>
+  <style>
+    a {
+      color: white;
+    }
+    @font-face {
+      font-family: 'font';
+      src: url('font/paperlogy.ttf')
+      format('truetype');
+    }
+  </style>
+</head>
+<body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100vh">
+  <div id="main" style="opacity: 0; display: none; max-height: 0px; transition: opacity 1s ease, max-height 1s ease; overflow: hidden;">
+    <div style="display: flex; justify-content: center; margin-top: 50px">
+      <img src="logo.jpg" width="200px" style="margin:0">
+    </div>
+    <br><br>
+    <h1 style="margin-top: 0">KAPS.KR 도메인</h1>
+    <p>
+      오신것을 환영합니다 | <a href="https://www.instagram.com/im_acops?igsh=MXBrZjlxcW9sbWozeg==">@im_acops</a> | <a onclick="info()" style="text-decoration: underline">'나'는</a>
+    </p>
+
+    <p style="bottom: 0px"></p>
+
+    <div style="position: fixed; bottom: 0px; width: 100%; background-color: black; margin: 0">
+      <hr>
+      <div style="display: block; width: 100%; text-align: center; margin-bottom: 0">
+        <p>
+          <a href="contact.html">연락처</a> | <a href="list.html">리스트</a> | <a href="design.html">디자인</a>
+          <br>
+          <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="brun()">
+            배너 표시
+          </a> <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="hr.()">
+            HR
+          </a>
+        </p>
+        
+        <div style="display: flex; justify-content: center; opacity: 0; max-height: 0px; margin: 0; transition: opacity 1s ease, max-height 1s ease; width: 100%" id="pfrme">
+          <div style="width: 100%">
+            <hr style="width: 100%" id="bannerhr">
+            <img src="https://kaps.kr/storage/wel.jpg" style="width: 400px;" id="infop">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="info" style="max-height: 0px; opacity: 0; overflow: hidden; transition: opacity 1s ease, max-height 1s ease;">
+      <br>
+      <br><hr style="width: 50%; border: 0.5px solid #444"><brB
+      <h1>개발자</h1>
+      <p>
+        저의 신념은<br><b>'코딩은 예술이다'</b>입니다.
+      </p>
+      <p>
+        그러하여, 저는 코딩에 AI를 사용하지 않습니다<br>저는 코딩하는 그자체로 재미를 느끼기 때문이지요
+      </p>
+      <p>
+        제 머릿속에 있던 이이디어를<br>코딩을 통해 세상으로 내보내는 일은<br>정말 재미있는 일입니다
+      </p>
+      <p>
+        그래서 제가 코딩을 하지요
+      </p>
+      <br><hr style="width: 50%; border: 0.5px solid #444"><br>
+      <p id="date" style="opacity: 0; transition: opacity 0.5s ease, max-height 1s ease; overflow: hidden">
+        에니메이션이 재설정 되었습니다
+      </p>
+
+    </div>
+    <img src="3D_gif/ACOPS_pixelated_black.gif" style="bottom: 0" onclick="location.href='3D.html'" id="3icon">
+  </div>
+  <div id="start" style="display: none; justify-content: center; align-items: center; height: 100vh">
+    <div id="first" style="transition: opacity 1s ease">
+      <h1>환영합니다</h1>
+    </div>
+    <div id="second" style="display: none; opacity: 0; transition: opacity 1s ease">
+      <h1>KAPS.KR 입니다</h1>
+    </div>
+  </div>
+
+  <div style="display: none; justify-content: center; align-items: center; height: 100vh" id="corn">
+    <div style="text-align: center">
+      <h1>Corns7의 디데이를 보셨군요!</h1>
+      <p>
+        그렇다면 제 원본 디데이 사이트를 봐보시죠..
+      </p>
+      <h3>5초후 자동 리디렉션 됩니다</h3>
+    </div>
+  </div>
+  <script>
+    let startsh = 1;
+    if (document.referrer.includes("dday.corns7.com")) {
+      startsh = 0;
+      document.getElementById("corn").style.display = "flex";
+      setTimeout(() => {
+        window.location.replace("http://dday.kaps.kro.kr/");
+      }, 5000)
+    } else {
+      startsh = 1;
+    }
+  </script>
+  <script>
+    if (startsh == 1) {
+      if (localStorage.getItem("vis") != "1") {
+        document.getElementById("start").style.display = "flex";
+        setTimeout(() => {
+          document.getElementById("first").style.opacity = "0";
+        }, 1000)
+        setTimeout(() => {
+          document.getElementById("first").style.display = "none";
+          document.getElementById("second").style.display = "block";
+          setTimeout(() => {
+            document.getElementById("second").style.opacity = "1";
+          }, 100)
+        }, 2000)
+        setTimeout(() => {
+          document.getElementById("second").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("second").style.display = "none";
+            document.getElementById("main").style.display = "block";
+            document.getElementById("start").style.display = "none";
+            setTimeout(() => {
+              document.getElementById("main").style.maxHeight = "100vh";
+              document.getElementById("main").style.opacity = "1";
+              localStorage.setItem("vis", "1");
+            }, 100)
+          }, 1100)
+        }, 4000)
+      } else {
+        document.getElementById("start").style.display = "none";
+        document.getElementById("main").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("main").style.maxHeight = "100vh";
+          document.getElementById("main").style.opacity = "1";
+        }, 100)
+
+      }
+    }
+
+    function info() {
+      localStorage.setItem("vis", "0");
+      document.getElementById("info").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("info").style.opacity = "1";
+        document.getElementById("3icon").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("3icon").style.display = "none";
+        }, 1010)
+        document.getElementById("info").style.maxHeight = "100vh";
+      }, 100)
+      setTimeout(() => {
+        document.getElementById("date").style.opacity = "1";
+        setTimeout(() => {
+          document.getElementById("date").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
+            setTimeout(() => {
+              document.getElementById("date").style.opacity = "1";
+            }, 100)
+          }, 600)
+        }, 1000)
+      }, 2000)
+    }
+  </script>
+  <script src="https://kaps.kr/storage/Banner.js"></script>
+</body>
+</html>
