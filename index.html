@@ -36,15 +36,15 @@
           <br>
           <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="brun()">
             배너 표시
-          </a> <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="hr.()">
+          </a> <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="hr()">
             HR
           </a>
         </p>
         
         <div style="display: flex; justify-content: center; opacity: 0; max-height: 0px; margin: 0; transition: opacity 1s ease, max-height 1s ease; width: 100%" id="pfrme">
           <div style="width: 100%">
-            <hr style="width: 100%" id="bannerhr">
-            <img src="https://kaps.kr/storage/wel.jpg" style="width: 400px;" id="infop">
+            <hr style="width: 100%; transition: width 1s ease;" id="hr">
+            <img src="files/wel.jpg" style="width: 400px;" id="infop">
           </div>
         </div>
       </div>
@@ -52,7 +52,7 @@
 
     <div id="info" style="max-height: 0px; opacity: 0; overflow: hidden; transition: opacity 1s ease, max-height 1s ease;">
       <br>
-      <br><hr style="width: 50%; border: 0.5px solid #444"><brB
+      <br><hr style="width: 50%; border: 0.5px solid #444"><br>
       <h1>개발자</h1>
       <p>
         저의 신념은<br><b>'코딩은 예술이다'</b>입니다.
@@ -92,81 +92,80 @@
       <h3>5초후 자동 리디렉션 됩니다</h3>
     </div>
   </div>
-  <script>
-    let startsh = 1;
-    if (document.referrer.includes("dday.corns7.com")) {
-      startsh = 0;
-      document.getElementById("corn").style.display = "flex";
+<script>
+  let startsh = 1;
+  if (document.referrer.includes("dday.corns7.com")) {
+    startsh = 0;
+    document.getElementById("corn").style.display = "flex";
+    setTimeout(() => {
+      window.location.replace("http://dday.kaps.kro.kr/");
+    }, 5000);
+  } else {
+    startsh = 1;
+  }
+
+  if (startsh == 1) {
+    if (localStorage.getItem("vis") != "1") {
+      document.getElementById("start").style.display = "flex";
       setTimeout(() => {
-        window.location.replace("http://dday.kaps.kro.kr/");
-      }, 5000)
+        document.getElementById("first").style.opacity = "0";
+      }, 1000);
+      setTimeout(() => {
+        document.getElementById("first").style.display = "none";
+        document.getElementById("second").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("second").style.opacity = "1";
+        }, 100);
+      }, 2000);
+      setTimeout(() => {
+        document.getElementById("second").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("second").style.display = "none";
+          document.getElementById("main").style.display = "block";
+          document.getElementById("start").style.display = "none";
+          setTimeout(() => {
+            document.getElementById("main").style.maxHeight = "100vh";
+            document.getElementById("main").style.opacity = "1";
+            localStorage.setItem("vis", "1");
+          }, 100);
+        }, 1100);
+      }, 4000);
     } else {
-      startsh = 1;
-    }
-  </script>
-  <script>
-    if (startsh == 1) {
-      if (localStorage.getItem("vis") != "1") {
-        document.getElementById("start").style.display = "flex";
-        setTimeout(() => {
-          document.getElementById("first").style.opacity = "0";
-        }, 1000)
-        setTimeout(() => {
-          document.getElementById("first").style.display = "none";
-          document.getElementById("second").style.display = "block";
-          setTimeout(() => {
-            document.getElementById("second").style.opacity = "1";
-          }, 100)
-        }, 2000)
-        setTimeout(() => {
-          document.getElementById("second").style.opacity = "0";
-          setTimeout(() => {
-            document.getElementById("second").style.display = "none";
-            document.getElementById("main").style.display = "block";
-            document.getElementById("start").style.display = "none";
-            setTimeout(() => {
-              document.getElementById("main").style.maxHeight = "100vh";
-              document.getElementById("main").style.opacity = "1";
-              localStorage.setItem("vis", "1");
-            }, 100)
-          }, 1100)
-        }, 4000)
-      } else {
-        document.getElementById("start").style.display = "none";
-        document.getElementById("main").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("main").style.maxHeight = "100vh";
-          document.getElementById("main").style.opacity = "1";
-        }, 100)
-
-      }
-    }
-
-    function info() {
-      localStorage.setItem("vis", "0");
-      document.getElementById("info").style.display = "block";
+      document.getElementById("start").style.display = "none";
+      document.getElementById("main").style.display = "block";
       setTimeout(() => {
-        document.getElementById("info").style.opacity = "1";
-        document.getElementById("3icon").style.opacity = "0";
-        setTimeout(() => {
-          document.getElementById("3icon").style.display = "none";
-        }, 1010)
-        document.getElementById("info").style.maxHeight = "100vh";
-      }, 100)
-      setTimeout(() => {
-        document.getElementById("date").style.opacity = "1";
-        setTimeout(() => {
-          document.getElementById("date").style.opacity = "0";
-          setTimeout(() => {
-            document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
-            setTimeout(() => {
-              document.getElementById("date").style.opacity = "1";
-            }, 100)
-          }, 600)
-        }, 1000)
-      }, 2000)
+        document.getElementById("main").style.maxHeight = "100vh";
+        document.getElementById("main").style.opacity = "1";
+      }, 100);
     }
-  </script>
-  <script src="https://kaps.kr/storage/Banner.js"></script>
+  }
+
+  function info() {
+    localStorage.setItem("vis", "0");
+    document.getElementById("info").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("info").style.opacity = "1";
+      document.getElementById("3icon").style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById("3icon").style.display = "none";
+      }, 1010);
+      document.getElementById("info").style.maxHeight = "100vh";
+    }, 100);
+    setTimeout(() => {
+      document.getElementById("date").style.opacity = "1";
+      setTimeout(() => {
+        document.getElementById("date").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
+          setTimeout(() => {
+            document.getElementById("date").style.opacity = "1";
+          }, 100);
+        }, 600);
+      }, 1000);
+    }, 2000);
+  }
+</script>
+
+<script src="script/banner.js"></script>
 </body>
 </html>
