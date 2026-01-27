@@ -20,9 +20,6 @@ let bannerst = 0;
         icnt = 2;
       } else if (icnt == 2) {
         imgElement.src = "files/banner/i1-1.jpg";
-        icnt = 0;
-      } else if (icnt == 0) {
-        imgElement.src = "files/banner/i1-1.jpg";
         icnt = 3;
       } else if (icnt == 3) {
         imgElement.src = "files/banner/i1-2.jpg";
