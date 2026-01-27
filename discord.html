@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UNLEASHED OMG</title>
+  <!-- Font Awesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* User's Original Theme */
+    @font-face {
+      font-family: 'paperlogy';
+      src: url('font/paperlogy.ttf') format('truetype');
+    }
+    
+    body {
+      background-color: black;
+      text-align: center;
+      color: white;
+      font-family: 'paperlogy', 'Noto Sans KR', sans-serif; /* Fallback added */
+      height: 100vh;
+      margin: 0;
+      overflow: hidden; /* Prevent scrolling during anim */
+    }
+
+    a {
+      color: white;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+      color: #ccc;
+    }
+
+    /* Utilities based on user's inline styles */
+    .fade-element {
+      transition: opacity 1s ease, max-height 1s ease;
+    }
+
+    /* Discord Specific Styles matching the theme */
+    .discord-box {
+      border: 1px solid #444;
+      padding: 20px;
+      margin: 20px auto;
+      max-width: 300px;
+      border-radius: 0; /* Minimalist: sharp corners or standard rounded */
+    }
+    
+    .btn {
+      display: inline-block;
+      border: 1px solid white;
+      padding: 10px 30px;
+      margin-top: 20px;
+      cursor: pointer;
+      background: transparent;
+      color: white;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    
+    .btn:hover {
+      background: white;
+      color: black;
+      text-decoration: none;
+    }
+
+    .copy-msg {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 10px;
+        height: 20px;
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Intro Section (Keeping user's animation logic) -->
+  <div id="start" style="display: flex; justify-content: center; align-items: center; height: 100vh; position: fixed; top: 0; left: 0; width: 100%; bg-color: black; z-index: 999;">
+    <div id="first" style="transition: opacity 1s ease">
+      <h1>환영합니다</h1>
+    </div>
+    <div id="second" style="display: none; opacity: 0; transition: opacity 1s ease">
+      <h1>UNLEASHED OMG 입니다</h1>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main" style="opacity: 0; display: none; transition: opacity 1s ease; height: 100vh; overflow-y: auto; padding-bottom: 50px;">
+    
+    <div style="display: flex; justify-content: center; margin-top: 50px">
+      <!-- Use FontAwesome icon if image is missing, matching the vibe -->
+      <div style="width: 150px; height: 150px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; border-radius: 50%;">
+          <i class="fa-brands fa-discord" style="font-size: 80px;"></i>
+      </div>
+      <!-- <img src="logo.jpg" width="200px" style="margin:0"> (Original placeholder) -->
+    </div>
+
+    <br><br>
+    <h1 style="margin-top: 0">UNLEASHED OMG</h1>
+    
+    <p>
+      OMG, 학생용 자유 디스코드
+    </p>
+
+    <div class="discord-box">
+        <p style="margin: 0; font-size: 0.9em; color: #aaa;">INVITE CODE</p>
+        <h2 style="margin: 10px 0; letter-spacing: 2px;">7FcvNbZj4</h2>
+        
+        <a href="https://discord.gg/7FcvNbZj4" target="_blank" class="btn">
+            입장하기
+        </a>
+        
+        <div style="margin-top: 15px;">
+            <a href="#" onclick="copyCode(event)" style="font-size: 0.9rem; text-decoration: underline; color: #888;">
+                [코드 복사]
+            </a>
+        </div>
+        <div id="copyMsg" class="copy-msg">복사되었습니다</div>
+    </div>
+
+    <br>
+    <hr style="width: 50%; border: 0.5px solid #444">
+    <br>
+    
+    <p style="font-size: 0.9rem; color: #888;">
+      ACVP12<br>lam_g_ha_nll<br>imnotmare (?)
+    </p>
+
+    <br><br><br>
+
+    <!-- Bottom Nav (Fixed) -->
+    <div style="position: fixed; bottom: 0px; width: 100%; background-color: black; margin: 0; padding-bottom: 10px;">
+      <hr style="margin-top: 0; border-color: #333;">
+      <div style="display: block; width: 100%; text-align: center; padding-top: 10px;">
+        <p style="margin: 0; font-size: 0.9rem;">
+          powered by ACVP12/에이콥스
+        </p>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+    // User's Animation Logic preserved exactly
+    if (localStorage.getItem("vis_discord") != "1") { // Changed key slightly to trigger animation on this new page
+      setTimeout(() => {
+        document.getElementById("first").style.opacity = "0";
+      }, 1000)
+      setTimeout(() => {
+        document.getElementById("first").style.display = "none";
+        document.getElementById("second").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("second").style.opacity = "1";
+        }, 100)
+      }, 2000)
+      setTimeout(() => {
+        document.getElementById("second").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("second").style.display = "none";
+          document.getElementById("main").style.display = "block";
+          document.getElementById("start").style.display = "none";
+          setTimeout(() => {
+            document.getElementById("main").style.opacity = "1";
+            localStorage.setItem("vis_discord", "1");
+          }, 100)
+        }, 1100)
+      }, 4000)
+    } else {
+      document.getElementById("start").style.display = "none";
+      document.getElementById("main").style.display = "block";
+      setTimeout(() => {
+        document.getElementById("main").style.opacity = "1";
+      }, 100)
+    }
+
+    function copyCode(e) {
+        e.preventDefault();
+        const code = "https://discord.gg/7FcvNbZj4";
+        navigator.clipboard.writeText(code).then(() => {
+            const msg = document.getElementById('copyMsg');
+            msg.style.opacity = '1';
+            setTimeout(() => {
+                msg.style.opacity = '0';
+            }, 2000);
+        }).catch(err => {
+            console.error('Copy failed', err);
+        });
+    }
+  </script>
+</body>
+</html>
+
+

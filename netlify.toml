@@ -1,0 +1,22 @@
+# Netlify 설정 파일
+
+[[redirects]]
+  # 웹사이트에서 이 주소로 접근하면
+  from = "/storage/*"
+  
+  # 실제로 파일이 있는 Termux IP 주소로 연결합니다.
+  # (사진 속 IP인 125.177.177.153를 사용했습니다.)
+  to = "http://125.177.177.153:8080/:splat"
+  
+  # 상태 코드 200은 '프록시(Proxy)'를 의미합니다. 
+  # 브라우저 주소창은 바뀌지 않지만, 내용은 Termux에서 가져옵니다.
+  status = 200
+  
+  # 기존에 같은 경로의 파일이 있더라도 이 규칙을 우선합니다.
+  force = true
+
+[[headers]]
+  for = "/storage/*"
+  [headers.values]
+    # 보안 정책(CORS) 허용
+    Access-Control-Allow-Origin = "*"
