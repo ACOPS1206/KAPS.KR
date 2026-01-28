@@ -15,7 +15,7 @@
     }
   </style>
 </head>
-<body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100vh">
+<body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100dvh">
   <div id="main" style="opacity: 0; display: none; max-height: 0px; transition: opacity 1s ease, max-height 1s ease; overflow: hidden;">
     <div style="display: flex; justify-content: center; margin-top: 50px">
       <img src="logo.jpg" width="200px" style="margin:0">
@@ -74,7 +74,7 @@
     </div>
     <img src="3d_gif/acops_pixelated_black.gif" style="bottom: 0" onclick="location.href='3d.html'" id="3icon">
   </div>
-  <div id="start" style="display: none; justify-content: center; align-items: center; height: 100vh">
+  <div id="start" style="display: none; justify-content: center; align-items: center; height: 100dvh">
     <div id="first" style="transition: opacity 1s ease">
       <h1>환영합니다</h1>
     </div>
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <div style="display: none; justify-content: center; align-items: center; height: 100vh" id="corn">
+  <div style="display: none; justify-content: center; align-items: center; height: 100dvh" id="corn">
     <div style="text-align: center">
       <h1>Corns7의 디데이를 보셨군요!</h1>
       <p>
@@ -124,7 +124,7 @@
           document.getElementById("main").style.display = "block";
           document.getElementById("start").style.display = "none";
           setTimeout(() => {
-            document.getElementById("main").style.maxHeight = "100vh";
+            document.getElementById("main").style.maxHeight = "100dvh";
             document.getElementById("main").style.opacity = "1";
             localStorage.setItem("vis", "1");
           }, 100);
@@ -134,7 +134,7 @@
       document.getElementById("start").style.display = "none";
       document.getElementById("main").style.display = "block";
       setTimeout(() => {
-        document.getElementById("main").style.maxHeight = "100vh";
+        document.getElementById("main").style.maxHeight = "100dvh";
         document.getElementById("main").style.opacity = "1";
       }, 100);
     }
@@ -149,7 +149,7 @@
       setTimeout(() => {
         document.getElementById("3icon").style.display = "none";
       }, 1010);
-      document.getElementById("info").style.maxHeight = "100vh";
+      document.getElementById("info").style.maxHeight = "100dvh";
     }, 100);
     setTimeout(() => {
       document.getElementById("date").style.opacity = "1";
