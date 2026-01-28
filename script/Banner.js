@@ -1,12 +1,19 @@
 let bannerst = 0;
-  let bannerhr = 1;
-  let icnt = 1;
-  let bannerInterval;
+let bannerhr = 1;
+let icnt = 1;
+let bannerInterval;
 
-  function brun() {
-    if (bannerst === 1) return;
-    bannerst = 1;
+function brun() {
+  if (bannerst === 1) return;
+  bannerst = 1;
 
+  document.getElementById("bottomtext").style.opacity = "0";
+  document.getElementById("bottomtext").style.maxHeight = "0px";
+  document.getElementById("bottomtext").style.margin = "0";
+  setTimeout(() => {
+    document.getElementById("bottomtext").style.display = "none";
+  }, 1010)
+  setTimeout(() => {
     const pfrme = document.getElementById("pfrme");
     pfrme.style.maxHeight = "200px";
     pfrme.style.opacity = "1";
@@ -14,7 +21,6 @@ let bannerst = 0;
     bannerInterval = setInterval(() => {
       const imgElement = document.getElementById("infop");
       if (!imgElement) return;
-
       if (icnt == 1) {
         imgElement.src = "files/Update/UPDATE.jpg";
         icnt = 2;
@@ -34,19 +40,21 @@ let bannerst = 0;
         imgElement.src = "files/banner/i1-5.jpg";
         icnt = 1;
       }
-    }, 2000);
-  }
+    },
+      2000);
+  }, 2010);
+}
 
-  function hr() {
-    const hrElement = document.getElementById("hr");
-    if (bannerhr == 1) {
-      hrElement.style.width = "90%";
-      bannerhr = 2;
-    } else if (bannerhr == 2) {
-      hrElement.style.width = "50%";
-      bannerhr = 3;
-    } else {
-      hrElement.style.width = "0%";
-      bannerhr = 1;
-    }
+function hr() {
+  const hrElement = document.getElementById("hr");
+  if (bannerhr == 1) {
+    hrElement.style.width = "90%";
+    bannerhr = 2;
+  } else if (bannerhr == 2) {
+    hrElement.style.width = "50%";
+    bannerhr = 3;
+  } else {
+    hrElement.style.width = "0%";
+    bannerhr = 1;
   }
+}
