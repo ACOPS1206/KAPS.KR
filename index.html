@@ -14,11 +14,15 @@
       src: url('font/paperlogy.ttf')
       format('truetype');
     }
+    @keyframes scroll-left {
+        0% { transform: translateX(100%); } /* 오른쪽 끝에서 시작 */
+        100% { transform: translateX(-200%); } /* 왼쪽 끝으로 이동 */
+      }
   </style>
 </head>
 <body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100dvh">
   <div id="main" style="opacity: 0; display: none; max-height: 0px; transition: opacity 1s ease, max-height 1s ease; overflow: hidden;">
-    <div style="display: flex; justify-content: center; margin-top: 50px">
+    <div style="display: flex; justify-content: center; margin-top: 50px" id="picf">
       <img src="logo.jpg" width="200px" style="margin:0">
     </div>
     <br><br>
@@ -33,7 +37,12 @@
       <hr>
 
       <!--이곳에 추가정보 입력-->
-
+      <div style="top: 0; position: fixed; width: 100%; left: 0;">
+            <div style="width: 100%; text-align: center; width: 100%; transition: max-height 1s ease, opacity 1s ease; max-height: 0px; overflow: hidden; opacity: 0;" id="infot">
+                <p style="font-size: medium; animation: scroll-left 10s linear infinite; white-space: nowrap;">이곳에 추후 여러가지 문구가 들어가게 될 예정입니다. 또한 문의는 aecopse12@gmail.com 으로 해주시기 바랍니다</p>
+            </div>
+            <hr style="margin: 0;">
+        </div>
       <div id="einfo" style="display: none; max-height: 0px; opacity: 0; transition: max-height 1s ease, opacity 1s ease;">
         <h3>새로운 프로젝트!</h3>
         <p><a href="popcorntm.html"style="color: white">POPCORNTM.DEV</a> 에 방문해 보세요<br>CORNS7과 함께 협엽합니다</p>
@@ -119,7 +128,7 @@
                 einf.style.display = "none";
               }, 1000);
             }, 1000);
-          }, 3000);
+          }, 8000);
         }, 800)
       }, 15)
     }, 2000)
@@ -198,6 +207,20 @@
     }, 2000);
   }
 </script>
+
+<script>
+        setTimeout(() => {
+            document.getElementById("infot").style.maxHeight = "70px";
+            document.getElementById("infot").style.opacity = "1";
+            document.getElementById("picf").style.marginTop = "80px";
+        }, 200)
+
+        setTimeout(() => {
+            document.getElementById("infot").style.maxHeight = "0px";
+            document.getElementById("infot").style.opacity = "0";
+            document.getElementById("picf").style.marginTop = "80px";
+        }, 7000)
+    </script>
 
 <script src="script/Banner.js"></script>
 </body>
