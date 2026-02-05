@@ -30,6 +30,14 @@
 
     <div style="position: fixed; bottom: 0px; width: 100%; background-color: black; margin: 0" id="bottom">
       <hr>
+
+      <!--이곳에 추가정보 입력-->
+
+      <div id="einfo" style="display: none; max-height: 0px; opacity: 0; transition: max-height 1s ease, opacity 1s ease;">
+        <h3>새로운 프로젝트!</h3>
+        <p><a href="https://popcorntm.dev/"style="color: white">POPCORNTM.DEV</a> 에 방문해 보세요<br>CORNS7과 함께 협엽합니다</p>
+      </div>
+
       <div style="display: block; width: 100%; text-align: center; margin-bottom: 0">
         <p style="transition: opacity 1s ease, max-height 1s ease, margin 1s ease; max-height: 200px" id="bottomtext">
           <a href="contact.html">연락처</a> | <a href="list.html">리스트</a> | <a href="design.html">디자인</a>
@@ -93,6 +101,29 @@
   </div>
 <script>
   let startsh = 1;
+
+  function startBannerAnimation() {
+    setTimeout(() => {
+      const einf = document.getElementById("einfo");
+      einf.style.display = "block";
+      setTimeout(() => {
+        einf.style.maxHeight = "200px";
+        setTimeout(() => {
+          einf.style.opacity = "1";
+          setTimeout(() => {
+            einf.style.opacity = "0";
+            setTimeout(() => {
+              einf.style.maxHeight = "0px";
+              setTimeout(() => {
+                einf.style.display = "none";
+              }, 1000);
+            }, 1000);
+          }, 3000);
+        }, 800)
+      }, 10)
+    }, 2000)
+  }
+
   if (document.referrer.includes("dday.corns7.com")) {
     startsh = 0;
     document.getElementById("corn").style.display = "flex";
@@ -126,6 +157,7 @@
             document.getElementById("main").style.maxHeight = "100dvh";
             document.getElementById("main").style.opacity = "1";
             localStorage.setItem("vis", "1");
+            startBannerAnimation();
           }, 100);
         }, 1100);
       }, 4000);
@@ -135,6 +167,7 @@
       setTimeout(() => {
         document.getElementById("main").style.maxHeight = "100dvh";
         document.getElementById("main").style.opacity = "1";
+        startBannerAnimation();
       }, 100);
     }
   }
