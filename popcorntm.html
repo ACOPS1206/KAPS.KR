@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>연락처</title>
+    <style>
+      a{
+        color: white;
+      }
+      @font-face{
+        font-family: 'font';
+        src: url('font/paperlogy.ttf')
+        format('truetype');
+      }
+      @keyframes scroll-left {
+        0% { transform: translateX(20%); } /* 오른쪽 끝에서 시작 */
+        100% { transform: translateX(-200%); } /* 왼쪽 끝으로 이동 */
+      }
+    </style>
+  </head>
+  <body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100vh; align-items: center; display: flex; justify-content: center; width: 100%">
+    <div style="text-align: center;">
+        <div style="top: 0; position: fixed; width: 100%; left: 0;">
+            <div style="width: 100%; text-align: center; width: 100%; transition: max-height 1s ease, opacity 1s ease; max-height: 0px; overflow: hidden; opacity: 0;" id="info">
+                <p style="font-size: medium; animation: scroll-left 10s linear infinite; white-space: nowrap;">이 사이트는 POPCORNTM.dev 사이트에 대한 설명을 제공하는 사이트 입니다. POPCORNTM.dev에 접속하시려면, 아래의 링크를 누르거나 <a href="https://popcorntm.dev" style="color: white;">이곳</a>을 눌러서 접속하세요</p>
+            </div>
+            <hr style="margin: 0;">
+        </div>
+        <h1 style="margin-top: 0">POPCORN™</h1>
+    <p>CORNS7과 협찬합니다 | <a href="index.html">홈페이지</a></p>
+    <br><hr style="width: 50%; border: 0.5px solid #444;"><br>
+    <p><a href="https://popcorntm.dev" style="color: white;">POPCORNTM.dev</a><br>지금 방문해 보세요!</p>
+    <p>이 사이트는 CORNS7과 공동 개발하는 사이트 입니다<br>앞으로 많은 변화가 이루어질 예정입니다<br>저희의 여정을 지켜봐 주세요</p>
+    <br><hr style="width: 50%; border: 0.5px solid #444;"><br>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById("info").style.maxHeight = "70px";
+            document.getElementById("info").style.opacity = "1";
+        }, 200)
+
+        setTimeout(() => {
+            document.getElementById("info").style.maxHeight = "0px";
+            document.getElementById("info").style.opacity = "0";
+        }, 7000)
+    </script>
+  </body>
+</html>
