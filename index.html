@@ -54,8 +54,8 @@
           <br>
           <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="brun()">
             배너 표시
-          </a>&nbsp<a style="text-decoration: underline; font-size: 10px; color: gray"  href="https://ko-fi.com/acops">
-            후원해주기
+          </a>&nbsp<a style="text-decoration: underline; font-size: 10px; color: gray" onclick="update()">
+            업데이트!
           </a>
         </p>
         
@@ -112,7 +112,7 @@
 <script>
   let startsh = 1;
 
-  function startBannerAnimation() {
+  function update() {
     setTimeout(() => {
       const einf = document.getElementById("einfo");
       einf.style.display = "block";
@@ -128,10 +128,10 @@
                 einf.style.display = "none";
               }, 1000);
             }, 1000);
-          }, 8000);
+          }, 3000);
         }, 800)
       }, 15)
-    }, 2000)
+    }, 10)
   }
 
   if (document.referrer.includes("dday.corns7.com")) {
@@ -177,7 +177,6 @@
       setTimeout(() => {
         document.getElementById("main").style.maxHeight = "100dvh";
         document.getElementById("main").style.opacity = "1";
-        startBannerAnimation();
       }, 100);
     }
   }
