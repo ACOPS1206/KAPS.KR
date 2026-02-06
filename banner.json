@@ -1,7 +1,4 @@
 {
-  "interval": 1000,
-  "channels": [
-    { "text": "첫 번째 공지입니다.", "duration": 5000 },
-    { "text": "두 번째 공지입니다.", "duration": 5000 }
-  ]
+  "text": "공지사항 문구입니다.",
+  "duration": 9000
 }
