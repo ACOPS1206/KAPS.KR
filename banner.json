@@ -1,5 +1,6 @@
 [
-  { "text": "첫 번째 채널: 환영합니다!", "duration": 5000 },
-  { "text": "두 번째 채널: 새로운 프로젝트를 확인하세요.", "duration": 7000 },
-  { "text": "세 번째 채널: 문의는 메일로 부탁드립니다.", "duration": 4000 }
+  {
+    "text": "환영합니다! KAPS.KR 입니다. ¯\\_(ツ)_/¯ 또한 이전 http::/home.kjy-acops.kro.kr 도 방문해 보세요",
+    "duration": 5000
+  }
 ]
