@@ -112,114 +112,128 @@
 <script>
   let startsh = 1;
 
-  function update() {
+function update() {
+  setTimeout(() => {
+    const einf = document.getElementById("einfo");
+    einf.style.display = "block";
     setTimeout(() => {
-      const einf = document.getElementById("einfo");
-      einf.style.display = "block";
+      einf.style.maxHeight = "200px";
       setTimeout(() => {
-        einf.style.maxHeight = "200px";
+        einf.style.opacity = "1";
         setTimeout(() => {
-          einf.style.opacity = "1";
+          einf.style.opacity = "0";
           setTimeout(() => {
-            einf.style.opacity = "0";
+            einf.style.maxHeight = "0px";
             setTimeout(() => {
-              einf.style.maxHeight = "0px";
-              setTimeout(() => {
-                einf.style.display = "none";
-              }, 1000);
+              einf.style.display = "none";
             }, 1000);
-          }, 3000);
-        }, 800)
-      }, 15)
-    }, 10)
-  }
+          }, 1000);
+        }, 3000);
+      }, 800)
+    }, 15)
+  }, 10)
+}
 
-  if (document.referrer.includes("dday.corns7.com")) {
-    startsh = 0;
-    document.getElementById("corn").style.display = "flex";
+async function loadBanner() {
+  const url = 'https://raw.githubusercontent.com/ACOPS1206/KAPS.KR/main/banner.json';
+  try {
+    const response = await fetch(url + '?nocache=' + new Date().getTime());
+    const data = await response.json();
+    const bannerText = data.text;
+    const duration = data.duration || 7000;
+    const infot = document.getElementById("infot");
+    
+    document.querySelector('#infot p').innerText = bannerText;
+
     setTimeout(() => {
-      window.location.replace("http://dday.kaps.kro.kr/");
-    }, 5000);
-  } else {
-    startsh = 1;
-  }
+      infot.style.maxHeight = "70px";
+      infot.style.opacity = "1";
+      document.getElementById("picf").style.marginTop = "80px";
+    }, 200);
 
-  if (startsh == 1) {
-    if (localStorage.getItem("vis") != "1") {
-      document.getElementById("start").style.display = "flex";
+    setTimeout(() => {
+      infot.style.maxHeight = "0px";
+      infot.style.opacity = "0";
+    }, duration);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+if (document.referrer.includes("dday.corns7.com")) {
+  startsh = 0;
+  document.getElementById("corn").style.display = "flex";
+  setTimeout(() => {
+    window.location.replace("http://dday.kaps.kro.kr/");
+  }, 5000);
+} else {
+  startsh = 1;
+}
+
+if (startsh == 1) {
+  if (localStorage.getItem("vis") != "1") {
+    document.getElementById("start").style.display = "flex";
+    setTimeout(() => {
+      document.getElementById("first").style.opacity = "0";
+    }, 1000);
+    setTimeout(() => {
+      document.getElementById("first").style.display = "none";
+      document.getElementById("second").style.display = "block";
       setTimeout(() => {
-        document.getElementById("first").style.opacity = "0";
-      }, 1000);
-      setTimeout(() => {
-        document.getElementById("first").style.display = "none";
-        document.getElementById("second").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("second").style.opacity = "1";
-        }, 100);
-      }, 2000);
-      setTimeout(() => {
-        document.getElementById("second").style.opacity = "0";
-        setTimeout(() => {
-          document.getElementById("second").style.display = "none";
-          document.getElementById("main").style.display = "block";
-          document.getElementById("start").style.display = "none";
-          setTimeout(() => {
-            document.getElementById("main").style.maxHeight = "100dvh";
-            document.getElementById("main").style.opacity = "1";
-            localStorage.setItem("vis", "1");
-            startBannerAnimation();
-          }, 100);
-        }, 1100);
-      }, 4000);
-    } else {
-      document.getElementById("start").style.display = "none";
-      document.getElementById("main").style.display = "block";
-      setTimeout(() => {
-        document.getElementById("main").style.maxHeight = "100dvh";
-        document.getElementById("main").style.opacity = "1";
+        document.getElementById("second").style.opacity = "1";
       }, 100);
-    }
-  }
-
-  function info() {
-    localStorage.setItem("vis", "0");
-    document.getElementById("info").style.display = "block";
-    setTimeout(() => {
-      document.getElementById("info").style.opacity = "1";
-      document.getElementById("3icon").style.opacity = "0";
-      setTimeout(() => {
-        document.getElementById("3icon").style.display = "none";
-      }, 1010);
-      document.getElementById("info").style.maxHeight = "100dvh";
-    }, 100);
-    setTimeout(() => {
-      document.getElementById("date").style.opacity = "1";
-      setTimeout(() => {
-        document.getElementById("date").style.opacity = "0";
-        setTimeout(() => {
-          document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
-          setTimeout(() => {
-            document.getElementById("date").style.opacity = "1";
-          }, 100);
-        }, 600);
-      }, 1000);
     }, 2000);
+    setTimeout(() => {
+      document.getElementById("second").style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById("second").style.display = "none";
+        document.getElementById("main").style.display = "block";
+        document.getElementById("start").style.display = "none";
+        setTimeout(() => {
+          document.getElementById("main").style.maxHeight = "100dvh";
+          document.getElementById("main").style.opacity = "1";
+          localStorage.setItem("vis", "1");
+          if (typeof startBannerAnimation === 'function') startBannerAnimation();
+          loadBanner();
+        }, 100);
+      }, 1100);
+    }, 4000);
+  } else {
+    document.getElementById("start").style.display = "none";
+    document.getElementById("main").style.display = "block";
+    setTimeout(() => {
+      document.getElementById("main").style.maxHeight = "100dvh";
+      document.getElementById("main").style.opacity = "1";
+      loadBanner();
+    }, 100);
   }
+}
+
+function info() {
+  localStorage.setItem("vis", "0");
+  document.getElementById("info").style.display = "block";
+  setTimeout(() => {
+    document.getElementById("info").style.opacity = "1";
+    document.getElementById("3icon").style.opacity = "0";
+    setTimeout(() => {
+      document.getElementById("3icon").style.display = "none";
+    }, 1010);
+    document.getElementById("info").style.maxHeight = "100dvh";
+  }, 100);
+  setTimeout(() => {
+    document.getElementById("date").style.opacity = "1";
+    setTimeout(() => {
+      document.getElementById("date").style.opacity = "0";
+      setTimeout(() => {
+        document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
+        setTimeout(() => {
+          document.getElementById("date").style.opacity = "1";
+        }, 100);
+      }, 600);
+    }, 1000);
+  }, 2000);
+}
 </script>
-
-<script>
-        setTimeout(() => {
-            document.getElementById("infot").style.maxHeight = "70px";
-            document.getElementById("infot").style.opacity = "1";
-            document.getElementById("picf").style.marginTop = "80px";
-        }, 200)
-
-        setTimeout(() => {
-            document.getElementById("infot").style.maxHeight = "0px";
-            document.getElementById("infot").style.opacity = "0";
-            document.getElementById("picf").style.marginTop = "80px";
-        }, 7000)
-    </script>
 
 <script src="script/Banner.js"></script>
 </body>
