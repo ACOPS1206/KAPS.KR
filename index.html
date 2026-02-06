@@ -138,36 +138,51 @@ async function loadBanner() {
   const url = 'https://raw.githubusercontent.com/ACOPS1206/KAPS.KR/main/banner.json';
   try {
     const response = await fetch(url + '?nocache=' + new Date().getTime());
-    const channels = await response.json();
+    const data = await response.json();
+    
+    // 데이터 구조 파악 (객체 형태면 channels를 쓰고, 아니면 데이터 자체를 배열로 인식)
+    const channels = data.channels || (Array.isArray(data) ? data : []);
+    const interval = data.interval || 1000; // 간격 설정이 없으면 기본 1초
+    
     const infot = document.getElementById("infot");
     const bannerP = document.querySelector('#infot p');
     
+    if (channels.length === 0) return; // 채널이 없으면 실행 안 함
+
     let currentIndex = 0;
 
     function displayNextChannel() {
-      if (currentIndex >= channels.length) return;
+      if (currentIndex >= channels.length) {
+        // 모든 채널이 끝나면 상단바를 완전히 닫음
+        infot.style.maxHeight = "0px";
+        infot.style.opacity = "0";
+        return;
+      }
 
       const current = channels[currentIndex];
       bannerP.innerText = current.text;
 
+      // 상단바 나타나기
       infot.style.maxHeight = "70px";
       infot.style.opacity = "1";
       document.getElementById("picf").style.marginTop = "80px";
 
+      // duration만큼 유지 후 사라지기
       setTimeout(() => {
         infot.style.maxHeight = "0px";
         infot.style.opacity = "0";
         
         currentIndex++;
-        if (currentIndex < channels.length) {
-          setTimeout(displayNextChannel, 1000);
-        }
+        // 간격(interval) 후에 다음 채널 표시
+        setTimeout(displayNextChannel, interval);
       }, current.duration);
     }
 
-    setTimeout(displayNextChannel, 200);
+    // 첫 번째 채널 시작
+    displayNextChannel();
+
   } catch (e) {
-    console.error(e);
+    console.error("배너 로드 실패:", e);
   }
 }
 
