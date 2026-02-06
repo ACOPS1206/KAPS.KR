@@ -138,23 +138,34 @@ async function loadBanner() {
   const url = 'https://raw.githubusercontent.com/ACOPS1206/KAPS.KR/main/banner.json';
   try {
     const response = await fetch(url + '?nocache=' + new Date().getTime());
-    const data = await response.json();
-    const bannerText = data.text;
-    const duration = data.duration || 7000;
+    const channels = await response.json();
     const infot = document.getElementById("infot");
+    const bannerP = document.querySelector('#infot p');
     
-    document.querySelector('#infot p').innerText = bannerText;
+    let currentIndex = 0;
 
-    setTimeout(() => {
+    function displayNextChannel() {
+      if (currentIndex >= channels.length) return;
+
+      const current = channels[currentIndex];
+      bannerP.innerText = current.text;
+
       infot.style.maxHeight = "70px";
       infot.style.opacity = "1";
       document.getElementById("picf").style.marginTop = "80px";
-    }, 200);
 
-    setTimeout(() => {
-      infot.style.maxHeight = "0px";
-      infot.style.opacity = "0";
-    }, duration);
+      setTimeout(() => {
+        infot.style.maxHeight = "0px";
+        infot.style.opacity = "0";
+        
+        currentIndex++;
+        if (currentIndex < channels.length) {
+          setTimeout(displayNextChannel, 1000);
+        }
+      }, current.duration);
+    }
+
+    setTimeout(displayNextChannel, 200);
   } catch (e) {
     console.error(e);
   }
@@ -233,6 +244,7 @@ function info() {
     }, 1000);
   }, 2000);
 }
+
 </script>
 
 <script src="script/Banner.js"></script>
