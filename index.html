@@ -139,11 +139,32 @@ async function loadBanner() {
   try {
     const response = await fetch(url + '?nocache=' + new Date().getTime());
     const data = await response.json();
-    const bannerText = data.text;
-    const duration = data.duration || 7000;
-    const infot = document.getElementById("infot");
     
-    document.querySelector('#infot p').innerText = bannerText;
+    const infot = document.getElementById("infot");
+    const bannerP = document.querySelector('#infot p');
+    
+    const text = data.text;
+    const loops = data.loops || 1;
+    const speed = data.speed || 100;
+
+    bannerP.innerText = text;
+    bannerP.style.animation = "none"; 
+
+    const windowWidth = window.innerWidth;
+    const textWidth = bannerP.offsetWidth;
+    const totalDistance = windowWidth + textWidth;
+    const duration = totalDistance / speed;
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes dynamic-scroll {
+        from { transform: translateX(${windowWidth}px); }
+        to { transform: translateX(-${textWidth}px); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    bannerP.style.animation = `dynamic-scroll ${duration}s linear ${loops}`;
 
     setTimeout(() => {
       infot.style.maxHeight = "70px";
@@ -151,10 +172,11 @@ async function loadBanner() {
       document.getElementById("picf").style.marginTop = "80px";
     }, 200);
 
-    setTimeout(() => {
+    bannerP.addEventListener('animationend', () => {
       infot.style.maxHeight = "0px";
       infot.style.opacity = "0";
-    }, duration);
+    });
+
   } catch (e) {
     console.error(e);
   }
