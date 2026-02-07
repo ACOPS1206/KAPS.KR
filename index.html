@@ -187,8 +187,7 @@
           infot.style.maxHeight = "70px";
           infot.style.opacity = "1";
           if (picf) picf.style.marginTop = "80px";
-
-          // 애니메이션이 끝나면 사용자님이 제시한 방식(max-height, opacity 0)으로 종료
+          //종료스크립트
           bannerP.onanimationend = () => {
             infot.style.maxHeight = "0px";
             infot.style.opacity = "0";
@@ -232,7 +231,7 @@
             document.getElementById("main").style.display = "block";
             document.getElementById("start").style.display = "none";
             setTimeout(() => {
-              document.getElementById("main").style.maxHeight = "100dvh";
+              document.getElementById("main").style.minHeight = "100dvh";
               document.getElementById("main").style.opacity = "1";
               localStorage.setItem("vis", "1");
               if (typeof startBannerAnimation === 'function') startBannerAnimation();
@@ -245,7 +244,7 @@
         document.getElementById("start").style.display = "none";
         document.getElementById("main").style.display = "block";
         setTimeout(() => {
-          document.getElementById("main").style.maxHeight = "100dvh";
+          document.getElementById("main").style.minHeight = "100dvh";
           document.getElementById("main").style.opacity = "1";
           loadBanner();
         }, 100);
@@ -261,7 +260,7 @@
         setTimeout(() => {
           document.getElementById("3icon").style.display = "none";
         }, 1010);
-        document.getElementById("info").style.maxHeight = "100dvh";
+        document.getElementById("info").style.minHeight = "100dvh";
       }, 100);
       setTimeout(() => {
         document.getElementById("date").style.opacity = "1";
