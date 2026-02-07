@@ -13,16 +13,27 @@
       font-family: 'font';
       src: url('font/paperlogy.ttf')
       format('truetype');
-    }
-    @keyframes scroll-left {
+      }
+      @keyframes scroll-left {
         0% { transform: translateX(100%); } /* 오른쪽 끝에서 시작 */
         100% { transform: translateX(-200%); } /* 왼쪽 끝으로 이동 */
       }
-  </style>
-</head>
-<body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100dvh">
+    </style>
+  </head>
+  <body style="background-color: black; text-align: center; color: white; font-family: 'font', paperlogy; height: 100dvh">
+    <div style="display: flex; top: 0; position: fixed; width: 100%; left: 0;">
+      <div>
+        <div style="width: 100%; text-align: center; width: 100%; transition: max-height 1s ease, opacity 1s ease; max-height: 0px; overflow: hidden; opacity: 0;" id="infot">
+          <p style="font-size: medium; animation: scroll-left 10s linear infinite; white-space: nowrap;">
+            이곳에 추후 여러가지 문구가 들어가게 될 예정입니다. 또한 문의는 aecopse12@gmail.com 으로 해주시기 바랍니다
+          </p>
+        </div>
+        <hr style="margin: 0;">
+      </div>
+    </div>
+  </div>
   <div id="main" style="opacity: 0; display: none; max-height: 0px; transition: opacity 1s ease, max-height 1s ease; overflow: hidden;">
-    <div style="display: flex; justify-content: center; margin-top: 50px" id="picf">
+    <div style="display: flex; justify-content: center; margin-top: 1p0px" id="picf">
       <img src="logo.jpg" width="200px" style="margin:0">
     </div>
     <br><br>
@@ -37,15 +48,12 @@
       <hr>
 
       <!--이곳에 추가정보 입력-->
-      <div style="top: 0; position: fixed; width: 100%; left: 0;">
-            <div style="width: 100%; text-align: center; width: 100%; transition: max-height 1s ease, opacity 1s ease; max-height: 0px; overflow: hidden; opacity: 0;" id="infot">
-                <p style="font-size: medium; animation: scroll-left 10s linear infinite; white-space: nowrap;">이곳에 추후 여러가지 문구가 들어가게 될 예정입니다. 또한 문의는 aecopse12@gmail.com 으로 해주시기 바랍니다</p>
-            </div>
-            <hr style="margin: 0;">
-        </div>
+      
       <div id="einfo" style="display: none; max-height: 0px; opacity: 0; transition: max-height 1s ease, opacity 1s ease;">
         <h3>POPCORN™</h3>
-        <p><a href="popcorntm.html"style="color: white">새로운 프로젝트</a> 가 있어요!<br>CORNS7과 함깨 협업중입니다</p>
+        <p>
+          <a href="popcorntm.html"style="color: white">새로운 프로젝트</a> 가 있어요!<br>CORNS7과 함깨 협업중입니다
+        </p>
       </div>
 
       <div style="display: block; width: 100%; text-align: center; margin-bottom: 0">
@@ -58,7 +66,7 @@
             업데이트!
           </a>
         </p>
-        
+
         <div style="display: flex; justify-content: center; opacity: 0; max-height: 0px; margin: 0; transition: opacity 1s ease, max-height 1s ease; width: 100%" id="pfrme">
           <div style="width: 100%">
             <img src="files/wel.jpg" style="width: 420px;" id="infop">
@@ -109,165 +117,167 @@
       <h3>5초후 자동 리디렉션 됩니다</h3>
     </div>
   </div>
-<script>
-let startsh = 1;
+  <script>
+    let startsh = 1;
 
-function update() {
-  setTimeout(() => {
-    const einf = document.getElementById("einfo");
-    einf.style.display = "block";
-    setTimeout(() => {
-      einf.style.maxHeight = "200px";
+    function update() {
       setTimeout(() => {
-        einf.style.opacity = "1";
+        const einf = document.getElementById("einfo");
+        einf.style.display = "block";
         setTimeout(() => {
-          einf.style.opacity = "0";
+          einf.style.maxHeight = "200px";
           setTimeout(() => {
-            einf.style.maxHeight = "0px";
+            einf.style.opacity = "1";
             setTimeout(() => {
-              einf.style.display = "none";
-            }, 1000);
-          }, 1000);
-        }, 3000);
-      }, 800)
-    }, 15)
-  }, 10)
-}
+              einf.style.opacity = "0";
+              setTimeout(() => {
+                einf.style.maxHeight = "0px";
+                setTimeout(() => {
+                  einf.style.display = "none";
+                }, 1000);
+              }, 1000);
+            }, 3000);
+          }, 800)
+        }, 15)
+      }, 10)
+    }
 
-async function loadBanner() {
-  const url = 'https://raw.githubusercontent.com/ACOPS1206/KAPS.KR/main/banner.json';
-  try {
-    const response = await fetch(url + '?nocache=' + new Date().getTime());
-    const data = await response.json();
-    
-    const infot = document.getElementById("infot");
-    const bannerP = document.querySelector('#infot p');
-    const picf = document.getElementById("picf");
-    
-    const text = data.text || "";
-    const loops = data.loops || 1;
-    const speed = data.speed || 100;
+    async function loadBanner() {
+      const url = 'https://raw.githubusercontent.com/ACOPS1206/KAPS.KR/main/banner.json';
+      try {
+        const response = await fetch(url + '?nocache=' + new Date().getTime());
+        const data = await response.json();
 
-    bannerP.innerText = text;
-    bannerP.style.animation = "none";
-    bannerP.style.display = "inline-block";
+        const infot = document.getElementById("infot");
+        const bannerP = document.querySelector('#infot p');
+        const picf = document.getElementById("picf");
 
-    setTimeout(() => {
-      // 모바일 뷰포트 너비를 더 정확하게 계산
-      const windowWidth = document.documentElement.clientWidth || window.innerWidth;
-      const textWidth = bannerP.getBoundingClientRect().width;
-      const totalDistance = windowWidth + textWidth;
-      const duration = totalDistance / speed;
+        const text = data.text || "";
+        const loops = data.loops || 1;
+        const speed = data.speed || 100;
 
-      const styleId = 'dynamic-scroll-style';
-      let styleTag = document.getElementById(styleId);
-      if (!styleTag) {
-        styleTag = document.createElement('style');
-        styleTag.id = styleId;
-        document.head.appendChild(styleTag);
-      }
-      
-      styleTag.innerHTML = `
-        @keyframes dynamic-scroll {
+        bannerP.innerText = text;
+        bannerP.style.animation = "none";
+        bannerP.style.display = "inline-block";
+
+        setTimeout(() => {
+          // 모바일 뷰포트 너비를 더 정확하게 계산
+          const windowWidth = document.documentElement.clientWidth || window.innerWidth;
+          const textWidth = bannerP.getBoundingClientRect().width;
+          const totalDistance = windowWidth + textWidth;
+          const duration = totalDistance / speed;
+
+          const styleId = 'dynamic-scroll-style';
+          let styleTag = document.getElementById(styleId);
+          if (!styleTag) {
+            styleTag = document.createElement('style');
+            styleTag.id = styleId;
+            document.head.appendChild(styleTag);
+          }
+
+          styleTag.innerHTML = `
+          @keyframes dynamic-scroll {
           from { transform: translateX(${windowWidth}px); }
           to { transform: translateX(-${textWidth}px); }
-        }
-      `;
+          }
+          `;
 
-      bannerP.style.animation = `dynamic-scroll ${duration}s linear ${loops} forwards`;
-      
-      infot.style.maxHeight = "70px";
-      infot.style.opacity = "1";
-      if(picf) picf.style.marginTop = "80px";
+          bannerP.style.animation = `dynamic-scroll ${duration}s linear ${loops} forwards`;
 
-      // 애니메이션이 끝나면 사용자님이 제시한 방식(max-height, opacity 0)으로 종료
-      bannerP.onanimationend = () => {
-        infot.style.maxHeight = "0px";
-        infot.style.opacity = "0";
-        if(picf) picf.style.marginTop = "50px";
-      };
-    }, 100);
+          infot.style.maxHeight = "70px";
+          infot.style.opacity = "1";
+          if (picf) picf.style.marginTop = "80px";
 
-  } catch (e) {
-    console.error(e);
-  }
-}
+          // 애니메이션이 끝나면 사용자님이 제시한 방식(max-height, opacity 0)으로 종료
+          bannerP.onanimationend = () => {
+            infot.style.maxHeight = "0px";
+            infot.style.opacity = "0";
+            if (picf) picf.style.marginTop = "50px";
+          };
+        },
+          100);
 
-if (document.referrer.includes("dday.corns7.com")) {
-  startsh = 0;
-  document.getElementById("corn").style.display = "flex";
-  setTimeout(() => {
-    window.location.replace("http://dday.kaps.kro.kr/");
-  }, 5000);
-} else {
-  startsh = 1;
-}
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
-if (startsh == 1) {
-  if (localStorage.getItem("vis") != "1") {
-    document.getElementById("start").style.display = "flex";
-    setTimeout(() => {
-      document.getElementById("first").style.opacity = "0";
-    }, 1000);
-    setTimeout(() => {
-      document.getElementById("first").style.display = "none";
-      document.getElementById("second").style.display = "block";
+    if (document.referrer.includes("dday.corns7.com")) {
+      startsh = 0;
+      document.getElementById("corn").style.display = "flex";
       setTimeout(() => {
-        document.getElementById("second").style.opacity = "1";
-      }, 100);
-    }, 2000);
-    setTimeout(() => {
-      document.getElementById("second").style.opacity = "0";
-      setTimeout(() => {
-        document.getElementById("second").style.display = "none";
-        document.getElementById("main").style.display = "block";
+        window.location.replace("http://dday.kaps.kro.kr/");
+      }, 5000);
+    } else {
+      startsh = 1;
+    }
+
+    if (startsh == 1) {
+      if (localStorage.getItem("vis") != "1") {
+        document.getElementById("start").style.display = "flex";
+        setTimeout(() => {
+          document.getElementById("first").style.opacity = "0";
+        }, 1000);
+        setTimeout(() => {
+          document.getElementById("first").style.display = "none";
+          document.getElementById("second").style.display = "block";
+          setTimeout(() => {
+            document.getElementById("second").style.opacity = "1";
+          }, 100);
+        }, 2000);
+        setTimeout(() => {
+          document.getElementById("second").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("second").style.display = "none";
+            document.getElementById("main").style.display = "block";
+            document.getElementById("start").style.display = "none";
+            setTimeout(() => {
+              document.getElementById("main").style.maxHeight = "100dvh";
+              document.getElementById("main").style.opacity = "1";
+              localStorage.setItem("vis", "1");
+              if (typeof startBannerAnimation === 'function') startBannerAnimation();
+              loadBanner();
+            },
+              100);
+          }, 1100);
+        }, 4000);
+      } else {
         document.getElementById("start").style.display = "none";
+        document.getElementById("main").style.display = "block";
         setTimeout(() => {
           document.getElementById("main").style.maxHeight = "100dvh";
           document.getElementById("main").style.opacity = "1";
-          localStorage.setItem("vis", "1");
-          if (typeof startBannerAnimation === 'function') startBannerAnimation();
           loadBanner();
         }, 100);
-      }, 1100);
-    }, 4000);
-  } else {
-    document.getElementById("start").style.display = "none";
-    document.getElementById("main").style.display = "block";
-    setTimeout(() => {
-      document.getElementById("main").style.maxHeight = "100dvh";
-      document.getElementById("main").style.opacity = "1";
-      loadBanner();
-    }, 100);
-  }
-}
+      }
+    }
 
-function info() {
-  localStorage.setItem("vis", "0");
-  document.getElementById("info").style.display = "block";
-  setTimeout(() => {
-    document.getElementById("info").style.opacity = "1";
-    document.getElementById("3icon").style.opacity = "0";
-    setTimeout(() => {
-      document.getElementById("3icon").style.display = "none";
-    }, 1010);
-    document.getElementById("info").style.maxHeight = "100dvh";
-  }, 100);
-  setTimeout(() => {
-    document.getElementById("date").style.opacity = "1";
-    setTimeout(() => {
-      document.getElementById("date").style.opacity = "0";
+    function info() {
+      localStorage.setItem("vis", "0");
+      document.getElementById("info").style.display = "block";
       setTimeout(() => {
-        document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
+        document.getElementById("info").style.opacity = "1";
+        document.getElementById("3icon").style.opacity = "0";
         setTimeout(() => {
-          document.getElementById("date").style.opacity = "1";
-        }, 100);
-      }, 600);
-    }, 1000);
-  }, 2000);
-}
-</script>
+          document.getElementById("3icon").style.display = "none";
+        }, 1010);
+        document.getElementById("info").style.maxHeight = "100dvh";
+      }, 100);
+      setTimeout(() => {
+        document.getElementById("date").style.opacity = "1";
+        setTimeout(() => {
+          document.getElementById("date").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("date").innerHTML = "이 사이트 개발에 AI의 도움은 없었습니다 | <b>독학</b><br>2026.01.05 - 01.06";
+            setTimeout(() => {
+              document.getElementById("date").style.opacity = "1";
+            }, 100);
+          }, 600);
+        }, 1000);
+      }, 2000);
+    }
+  </script>
 
-<script src="script/Banner.js"></script>
+  <script src="script/Banner.js"></script>
 </body>
 </html>
