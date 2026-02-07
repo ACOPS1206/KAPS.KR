@@ -144,17 +144,18 @@ async function loadBanner() {
     const bannerP = document.querySelector('#infot p');
     const picf = document.getElementById("picf");
     
-    const text = data.text || "공지사항이 없습니다.";
+    const text = data.text || "";
     const loops = data.loops || 1;
     const speed = data.speed || 100;
 
     bannerP.innerText = text;
     bannerP.style.animation = "none";
-    bannerP.style.transform = "translateX(100vw)";
+    bannerP.style.display = "inline-block";
 
     setTimeout(() => {
-      const windowWidth = window.innerWidth;
-      const textWidth = bannerP.offsetWidth;
+      // 모바일 뷰포트 너비를 더 정확하게 계산
+      const windowWidth = document.documentElement.clientWidth || window.innerWidth;
+      const textWidth = bannerP.getBoundingClientRect().width;
       const totalDistance = windowWidth + textWidth;
       const duration = totalDistance / speed;
 
@@ -165,6 +166,7 @@ async function loadBanner() {
         styleTag.id = styleId;
         document.head.appendChild(styleTag);
       }
+      
       styleTag.innerHTML = `
         @keyframes dynamic-scroll {
           from { transform: translateX(${windowWidth}px); }
@@ -178,12 +180,8 @@ async function loadBanner() {
       infot.style.opacity = "1";
       if(picf) picf.style.marginTop = "80px";
 
+      // 애니메이션이 끝나면 사용자님이 제시한 방식(max-height, opacity 0)으로 종료
       bannerP.onanimationend = () => {
-        const currentTransform = window.getComputedStyle(bannerP).transform;
-        bannerP.style.animation = "none";
-        bannerP.style.transform = currentTransform;
-
-        infot.style.transition = "max-height 0.5s ease, opacity 0.5s ease";
         infot.style.maxHeight = "0px";
         infot.style.opacity = "0";
         if(picf) picf.style.marginTop = "50px";
@@ -268,7 +266,6 @@ function info() {
     }, 1000);
   }, 2000);
 }
-
 </script>
 
 <script src="script/Banner.js"></script>
