@@ -142,40 +142,53 @@ async function loadBanner() {
     
     const infot = document.getElementById("infot");
     const bannerP = document.querySelector('#infot p');
+    const picf = document.getElementById("picf");
     
-    const text = data.text;
+    const text = data.text || "공지사항이 없습니다.";
     const loops = data.loops || 1;
     const speed = data.speed || 100;
 
     bannerP.innerText = text;
-    bannerP.style.animation = "none"; 
-
-    const windowWidth = window.innerWidth;
-    const textWidth = bannerP.offsetWidth;
-    const totalDistance = windowWidth + textWidth;
-    const duration = totalDistance / speed;
-
-    const style = document.createElement('style');
-    style.innerHTML = `
-      @keyframes dynamic-scroll {
-        from { transform: translateX(${windowWidth}px); }
-        to { transform: translateX(-${textWidth}px); }
-      }
-    `;
-    document.head.appendChild(style);
-
-    bannerP.style.animation = `dynamic-scroll ${duration}s linear ${loops}`;
+    bannerP.style.animation = "none";
+    bannerP.style.transform = "translateX(100vw)";
 
     setTimeout(() => {
+      const windowWidth = window.innerWidth;
+      const textWidth = bannerP.offsetWidth;
+      const totalDistance = windowWidth + textWidth;
+      const duration = totalDistance / speed;
+
+      const styleId = 'dynamic-scroll-style';
+      let styleTag = document.getElementById(styleId);
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = styleId;
+        document.head.appendChild(styleTag);
+      }
+      styleTag.innerHTML = `
+        @keyframes dynamic-scroll {
+          from { transform: translateX(${windowWidth}px); }
+          to { transform: translateX(-${textWidth}px); }
+        }
+      `;
+
+      bannerP.style.animation = `dynamic-scroll ${duration}s linear ${loops} forwards`;
+      
       infot.style.maxHeight = "70px";
       infot.style.opacity = "1";
-      document.getElementById("picf").style.marginTop = "80px";
-    }, 200);
+      if(picf) picf.style.marginTop = "80px";
 
-    bannerP.addEventListener('animationend', () => {
-      infot.style.maxHeight = "0px";
-      infot.style.opacity = "0";
-    });
+      bannerP.onanimationend = () => {
+        const currentTransform = window.getComputedStyle(bannerP).transform;
+        bannerP.style.animation = "none";
+        bannerP.style.transform = currentTransform;
+
+        infot.style.transition = "max-height 0.5s ease, opacity 0.5s ease";
+        infot.style.maxHeight = "0px";
+        infot.style.opacity = "0";
+        if(picf) picf.style.marginTop = "50px";
+      };
+    }, 100);
 
   } catch (e) {
     console.error(e);
