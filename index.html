@@ -101,10 +101,10 @@
   </div>
   <div id="start" style="display: none; justify-content: center; align-items: center; height: 100dvh">
     <div id="first" style="transition: opacity 1s ease">
-      <h1>환영합니다</h1>
+      <h1 style="font-size: 50px; transition: font-size 1s ease" id="tone">환영합니다</h1>
     </div>
     <div id="second" style="display: none; opacity: 0; transition: opacity 1s ease">
-      <h1>KAPS.KR 입니다</h1>
+      <h1 style="font-size: 50px; transition: font-size 1s ease" id="ttwo">KAPS.KR 입니다</h1>
     </div>
   </div>
 
@@ -215,17 +215,23 @@
       if (localStorage.getItem("vis") != "1") {
         document.getElementById("start").style.display = "flex";
         setTimeout(() => {
+          document.getElementById("tone").style.fontSize = "40px";
+        }, 10);
+        setTimeout(() => {
           document.getElementById("first").style.opacity = "0";
+          document.getElementById("tone").style.fontSize = "30px";
         }, 1000);
         setTimeout(() => {
           document.getElementById("first").style.display = "none";
           document.getElementById("second").style.display = "block";
           setTimeout(() => {
             document.getElementById("second").style.opacity = "1";
-          }, 100);
+            document.getElementById("ttwo").style.fontSize ="40px";
+          }, 500);
         }, 2000);
         setTimeout(() => {
           document.getElementById("second").style.opacity = "0";
+          document.getElementById("ttwo").style.fontSize ="30px";
           setTimeout(() => {
             document.getElementById("second").style.display = "none";
             document.getElementById("main").style.display = "block";
@@ -239,7 +245,7 @@
             },
               100);
           }, 1100);
-        }, 4000);
+        }, 3500);
       } else {
         document.getElementById("start").style.display = "none";
         document.getElementById("main").style.display = "block";
