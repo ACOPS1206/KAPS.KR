@@ -31,8 +31,8 @@
     </section>
     <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-black">
         <div class="max-w-[1000px] w-full flex flex-col items-center text-center">
-            <h2 class="text-white text-[32px] md:text-[48px] font-bold mb-12 tracking-tight">네 가지 약속.</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left">
+            <h2 class="text-white text-[32px] md:text-[48px] font-bold mb-12 tracking-tight">세 가지 약속.</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left">
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300 flex flex-col items-start justify-between">
                     <div>
                         <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 01</h3>
@@ -60,16 +60,19 @@
                         </p>
                     </div>
                 </div>
-                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300 flex flex-col items-start justify-between">
-                    <div>
-                        <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 04</h3>
-                        <h4 class="text-white text-[24px] font-bold mb-4">시험 끝,<br/>진짜 쉬는 시간.</h4>
-                        <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                            열심히 준비한 시험이 끝난 뒤에는 충분한 휴식이 당연한 권리입니다. 시험 종료 후 자율적인 휴식 시간을 보장받을 수 있도록 학교 측에 적극 건의하겠습니다.
-                        </p>
-                    </div>
+            </div>
+            <div id="extra-promise" style="overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.6s ease, opacity 0.6s ease, margin-top 0.6s ease; margin-top: 0;" class="w-full text-left">
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 04</h3>
+                    <h4 class="text-white text-[24px] font-bold mb-4">시험 끝,<br/>진짜 쉬는 시간.</h4>
+                    <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
+                        열심히 준비한 시험이 끝난 뒤에는 충분한 휴식이 당연한 권리입니다. 시험 종료 후 자율적인 휴식 시간을 보장받을 수 있도록 학교 측에 적극 건의하겠습니다.
+                    </p>
                 </div>
             </div>
+            <button onclick="toggleExtra()" id="extra-btn" class="mt-8 px-6 py-3 rounded-full text-[14px] font-medium transition-all duration-300" style="background: #ffffff; color: #000000;">
+                추가 공약 보기 ↓
+            </button>
         </div>
     </section>
     <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-[black]">
@@ -77,7 +80,7 @@
             <h3 class="text-[#f56300] text-[15px] md:text-[17px] font-semibold mb-3 tracking-wide">디테일</h3>
             <h2 class="text-white text-[32px] md:text-[48px] font-bold mb-12 tracking-tight">작지만 확실한 변화.</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left">
-                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:bo겠rder-gray-500 transition-colors duration-300">
                     <h4 class="text-white text-[24px] font-bold mb-4">아리수, 그리고 종이컵.</h4>
                     <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
                         체육 시간 직후 꿀맛 같은 물 한 모금. 아리수 음수대 옆에 항상 깨끗한 종이컵을 넉넉하게 비치하도록 건의하겠습니다. 손으로 물을 받아 마시던 불편함 없이 언제든 위생적이고 편리하게 수분을 보충하세요.
@@ -122,5 +125,30 @@
             <p style="margin-top: 20px; width: 100%; font-size:x-large; color: rgb(255, 255, 255); text-align: center;">HTTPS://KAPS.KR/회장선거</p>
         </div>
     </footer>
+    <script>
+        function toggleExtra() {
+            const el = document.getElementById('extra-promise');
+            const btn = document.getElementById('extra-btn');
+            const isHidden = el.style.maxHeight === '0px' || el.style.maxHeight === '0';
+
+            if (isHidden) {
+                el.style.maxHeight = '300px';
+                el.style.opacity = '1';
+                el.style.marginTop = '1.5rem';
+                btn.textContent = '추가 공약 접기 ↑';
+                btn.style.background = 'black';
+                btn.style.color = 'white';
+                btn.style.border = "1px solid white";
+            } else {
+                el.style.maxHeight = '0';
+                el.style.opacity = '0';
+                el.style.marginTop = '0';
+                btn.textContent = '추가 공약 보기 ↓';
+                btn.style.background = 'white';
+                btn.style.color = 'black';
+                btn.style.border = "none";
+            }
+        }
+    </script>
 </body>
 </html>
