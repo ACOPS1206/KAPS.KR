@@ -171,6 +171,15 @@
     </footer>
 
     <script>
+        // 새로고침 시 스크롤 위치를 복원하지 않고 맨 위로 이동하게 하는 기능
+        if ('scrollRestoration' in history) {
+            history.scrollRestoration = 'manual';
+        }
+        window.scrollTo(0, 0);
+        window.onload = function() {
+            window.scrollTo(0, 0);
+        };
+
         function toggleExtra() {
             const el = document.getElementById('extra-promise');
             const btn = document.getElementById('extra-btn');
@@ -252,3 +261,4 @@
     </script>
 </body>
 </html>
+
