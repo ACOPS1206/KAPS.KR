@@ -19,16 +19,27 @@
         .break-keep {
             word-break: keep-all;
         }
+        .blur-transition {
+            transition: filter 1s ease, opacity 1s ease, transform 1s ease;
+        }
+        .blur-transition-slow {
+            transition: filter 2s ease, opacity 2s ease, transform 2s ease;
+        }
     </style>
 </head>
 <body class="bg-black text-white">
+    <div id="presentation-curtain" onclick="hideCurtain()" class="fixed inset-0 bg-black/95 backdrop-blur-[30px] z-[100] cursor-pointer transition-all duration-[1500ms] ease-[cubic-bezier(0.32,0.72,0,1)] flex items-center justify-center">
+        <span class="text-white/30 text-sm tracking-widest animate-pulse pointer-events-none"></span>
+    </div>
+
     <section class="min-h-screen flex flex-col items-center justify-center p-6">
-        <main class="max-w-[800px] flex flex-col items-center text-center">
+        <main id="first-headline" class="max-w-[800px] flex flex-col items-center text-center blur-transition-slow" style="filter: blur(20px); opacity: 0; transform: scale(0.95);">
             <h3 class="text-[#f56300] text-[15px] md:text-[17px] font-semibold mb-3 tracking-wide">회장 공약</h3>
             <h2 class="text-[#f5f5f7] text-[36px] md:text-[56px] font-bold leading-[1.15] mb-6 tracking-tight">형식적인 공약들 말고.<br />진정히, 우리를 위해.</h2>
             <p class="text-[#86868b] text-[17px] md:text-[21px] leading-[1.5] font-medium max-w-[680px] break-keep">단순히 열심히 하겠다는 말이나 지키지 못할 거창한 약속은 하지 않겠습니다. 대신, 여러분이 매일 등교해서 하교할 때까지 피부로 직접 느낄 수 있는 가장 실질적이고 확실한 변화들을 소개합니다.</p>
         </main>
     </section>
+
     <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-black">
         <div class="max-w-[1000px] w-full flex flex-col items-center text-center">
             <h2 class="text-white text-[32px] md:text-[48px] font-bold mb-12 tracking-tight">세 가지 약속.</h2>
@@ -36,7 +47,7 @@
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300 flex flex-col items-start justify-between">
                     <div>
                         <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 01</h3>
-                        <h4 class="text-white text-[24px] font-bold mb-4">마르지 않는 비품.</h4>
+                        <h4 class="text-white text-[24px] font-bold mb-4">비품 유지/관리</h4>
                         <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
                             찾는 순간, 항상 그 자리에. 휴지, 구급약, 필기구 등 학교생활 중 갑자기 필요한 모든 실질적인 학급 비품을 부족함 없이 항시 채워두겠습니다.
                         </p>
@@ -45,7 +56,7 @@
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300 flex flex-col items-start justify-between">
                     <div>
                         <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 02</h3>
-                        <h4 class="text-white text-[24px] font-bold mb-4">완벽한 백업.<br/>완벽한 하루.</h4>
+                        <h4 class="text-white text-[24px] font-bold mb-4">비상용 교과서</h4>
                         <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
                             무거운 가방, 교과서를 깜빡 잊고 온 날의 아찔함. 이제 걱정하지 마세요. 주요 과목 교과서를 교실에 상시 비치하여 여러분의 든든한 백업 플랜이 되겠습니다.
                         </p>
@@ -54,13 +65,14 @@
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300 flex flex-col items-start justify-between">
                     <div>
                         <h3 class="text-[#f56300] text-[14px] font-bold mb-2">공약 03</h3>
-                        <h4 class="text-white text-[24px] font-bold mb-4">맛있는 시간.<br/>자유로운 대화.</h4>
+                        <h4 class="text-white text-[24px] font-bold mb-4">더 많은 <br>기술적 지원</h4>
                         <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                            점심시간은 단순한 식사를 넘어 친구들과 교감하는 소중한 시간입니다. 불합리한 급식실 대화 금지령을 해제하도록 학교 측에 강력히 건의하고 우리의 권리를 쟁취해 내겠습니다.
+                            학급 회장이라는 무게감을 안고, 더 착실하게 학생/선생님들을 도와드리며 이제 더 많은 기술적 지원들을 받으실 수 있을것 입니다.
                         </p>
                     </div>
                 </div>
             </div>
+            
             <div id="extra-promise" style="overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.6s ease, opacity 0.6s ease, margin-top 0.6s ease; margin-top: 0;" class="w-full text-left">
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
                     <h3 class="text-[#f56300] text-[14px] font-bold mb-2">그리고 하나 더.</h3>
@@ -70,62 +82,88 @@
                     </p>
                 </div>
             </div>
-            <button onclick="toggleExtra()" id="extra-btn" class="mt-8 px-6 py-3 rounded-full text-[14px] font-medium transition-all duration-300" style="background: #ffffff; color: #000000;">
+            
+            <button onclick="toggleExtra()" id="extra-btn" class="mt-8 px-6 py-3 rounded-full text-[14px] font-medium transition-all duration-300 cursor-pointer" style="background: #ffffff; color: #000000;">
                 추가 공약 보기 ↓
             </button>
         </div>
     </section>
-    <br><br>
+
     <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-[black]">
         <div class="max-w-[1000px] w-full flex flex-col items-center text-center">
             <h3 class="text-[#f56300] text-[15px] md:text-[17px] font-semibold mb-3 tracking-wide">디테일</h3>
             <h2 class="text-white text-[32px] md:text-[48px] font-bold mb-12 tracking-tight">작지만 확실한 변화.</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left">
-                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:bo겠rder-gray-500 transition-colors duration-300">
-                    <h4 class="text-white text-[24px] font-bold mb-4">아리수, 그리고 종이컵.</h4>
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h4 class="text-white text-[24px] font-bold mb-4">아리수 옆의 종이컵</h4>
                     <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                        체육 시간 직후 꿀맛 같은 물 한 모금. 아리수 음수대 옆에 항상 깨끗한 종이컵을 넉넉하게 비치하도록 건의하겠습니다. 손으로 물을 받아 마시던 불편함 없이 언제든 위생적이고 편리하게 수분을 보충하세요.
+                        아리수 음수대 옆에 항상 깨끗한 종이컵을 넉넉하게 비치하도록 건의하겠습니다. 이제 음수대 앞에 학생들이 몰려있다 하더라도, 물을 질서정연하게 마실 수 있습니다.
                     </p>
                 </div>
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
-                    <h4 class="text-white text-[24px] font-bold mb-4">모든 칸.<br/>완벽한 평화.</h4>
+                    <h4 class="text-white text-[24px] font-bold mb-4">화장실 칸마다 휴지 비치</h4>
                     <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                        급한 순간, 휴지를 찾아 헤맬 필요 없습니다. 화장실 모든 칸에 휴지를 비치하도록 건의하여 여러분의 가장 프라이빗한 순간까지 편안하게 지켜드리겠습니다.
+                        급한 순간, 휴지를 찾아 헤맬 필요 없습니다. 화장실 모든 칸에 휴지를 비치하도록 건의하여 여러분의 가장 얘기치 못한 상황을 대비해드립니다.
                     </p>
                 </div>
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
-                    <h4 class="text-white text-[24px] font-bold mb-4">언제나 자신 있게.<br/>완벽한 스타일.</h4>
+                    <h4 class="text-white text-[24px] font-bold mb-4">교실 내에 거울 추가 배치</h4>
                     <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                        체육 시간 직후, 혹은 점심시간. 흐트러진 앞머리가 신경 쓰이셨나요? 교실에 거울을 설치하여 언제든 용모를 단정히 점검하고 자신감 넘치는 하루를 보낼 수 있게 하겠습니다.
+                        체육 시간 직후, 혹은 점심시간. 흐트러진 앞머리가 신경 쓰이셨나요? 교실에 거울 설치를 건의하여 언제든 용모를 단정히 점검하고 자신감 넘치는 하루를 보낼 수 있게 도와드립니다.
                     </p>
                 </div>
                 <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
-                    <h4 class="text-white text-[24px] font-bold mb-4">비 오는 날의<br/>든든함.</h4>
+                    <h4 class="text-white text-[24px] font-bold mb-4">우산 대여 서비스</h4>
                     <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
-                        일기예보를 놓친 날, 갑작스러운 비에도 당황하지 마세요. 교실 뒤편에 누구나 편하게 빌려 쓸 수 있는 '양심 우산'을 비치하여 여러분의 하굣길을 뽀송하게 지켜드리겠습니다.
+                        일기예보를 놓친 날, 갑작스러운 비에도 당황하지 마세요. 교실 뒤편에 누구나 편하게 빌려 쓸 수 있는 '양심 우산'을 비치하여 여러분의 하굣길을 뽀송하게 지켜드립니다.
                     </p>
+                </div>
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h4 class="text-white text-[24px] font-bold mb-4">여러가지 이벤트</h4>
+                    <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
+                        마니또 같은 이벤트들로 학급 생활에 생기를 불어넣어 드립니다
+                    </p>
+                </div>
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h4 class="text-white text-[24px] font-bold mb-4">비상 비품 구비</h4>
+                    <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
+                        수업시간에 L자파일/노트가 없더라도 걱정하지 마세요. 언제나 비상 비품을 구비해두어 예기치 못한 상황에 대비해 드립니다.
+                    </p>
+                </div>
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h4 class="text-white text-[24px] font-bold mb-4">디벗 충전기/배터리 구비</h4>
+                    <p class="text-[#86868b] text-[15px] leading-relaxed break-keep">
+                        디벗이 방전되었거나, 충전이 잘 되지 않을 경우 충전기와 배터리를 대여하실 수 있습니다.<br>충전기와 배터리는 교실 내에 비치해둘 예정입니다..
+                    </p>
+                </div>
+                <div class="bg-[#111111] p-8 rounded-3xl border border-[#333] hover:border-gray-500 transition-colors duration-300">
+                    <h3 class="text-[#f56300] text-[14px] font-bold mb-2">물론, 당연하지만</h3>
+                    <h4 class="text-white text-[35px] font-bold mb-4">공약 실행을 위해<br>최선을 다할것 입니다</h4>
                 </div>
             </div>
         </div>
     </section>
-    <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#000000]">
-        <main class="max-w-[800px] flex flex-col items-center text-center">
-            <h3 class="text-[#f56300] text-[15px] md:text-[17px] font-semibold mb-3 tracking-wide">실행력</h3>
-            <h2 class="text-[#f5f5f7] text-[36px] md:text-[56px] font-bold leading-[1.15] mb-6 tracking-tight">실천은 즉시.<br />변화는 확실히.</h2>
-            <p class="text-[#86868b] text-[17px] md:text-[21px] leading-[1.5] font-medium max-w-[680px] break-keep">좋은 공약의 완성은 빠른 실천입니다. 당선 직후 가장 먼저 교실 비품을 채우고 비상용 교과서를 세팅하여, 변화를 바로 체감할 수 있게 증명하겠습니다.</p>
+
+    <section class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#000000] cursor-pointer" onclick="transformHeadline()">
+        <main id="final-headline" class="max-w-[800px] flex flex-col items-center text-center blur-transition">
+            <h3 id="fh-sub" class="text-[#f56300] text-[15px] md:text-[17px] font-semibold mb-3 tracking-wide transition-colors duration-700">그리고..</h3>
+            <h2 id="fh-title" class="text-[#f5f5f7] text-[36px] md:text-[56px] font-bold leading-[1.15] mb-6 tracking-tight transition-colors duration-700">일시적이지 않습니다.</h2>
+            <p id="fh-desc" class="text-[#86868b] text-[17px] md:text-[21px] leading-[1.5] font-medium max-w-[680px] break-keep transition-colors duration-700">선거가 끝난 후에도 제 역할은 멈추지 않습니다. 회장 당선 이후에도 여러분이 원하고 필요로 하는 새로운 의견들을 언제나 열린 마음으로 듣고, 학급 운영에 적극적으로 반영하겠습니다.</p>
         </main>
     </section>
+
     <footer class="w-full bg-[#111111] py-10 px-6 border-t border-[#333]">
         <div class="max-w-[1000px] mx-auto text-[#86868b] text-[13px] leading-relaxed break-keep">
             <p class="mb-2">이 사이트/문구 제작에 AI는 사용되지 않았습니다.<br>20810 김재윤</p>
             <div style="display: flex;">
-                <p><a href="https://kaps.kr" style="color: white;">홈페이지</a> | <a href="https://kaps.kr/contact" style="color: white;">연락처</a> | <a onclick="show()"><s>상세 정보 보이기</s></a></p>
+                <p><a href="https://kaps.kr" style="color: white; text-decoration: none; hover:underline;">홈페이지</a> | <a href="https://kaps.kr/contact" style="color: white; text-decoration: none; hover:underline;">연락처</a> | <button onclick="show()" style="color: white; cursor: pointer; background: none; border: none; padding: 0; font: inherit;">상세 정보 보이기</button></p>
             </div>
         </div>
-        <div style="display: block; overflow: hidden; max-height: 0; transition: max-height 1s ease;" id="URL">
-            <p style="margin-top: 20px; width: 100%; font-size:x-large; color: rgb(255, 255, 255); text-align: center;">HTTPS://KAPS.KR/회장선거</p>
+        <div style="display: block; overflow: hidden; max-height: 0; transition: max-height 0.8s ease;" id="URL">
+            <p style="margin-top: 20px; width: 100%; font-size:x-large; color: rgb(255, 255, 255); text-align: left; padding-left: 0;">HTTPS://KAPS.KR/회장선거</p>
         </div>
     </footer>
+
     <script>
         function toggleExtra() {
             const el = document.getElementById('extra-promise');
@@ -149,6 +187,64 @@
                 btn.style.color = 'black';
                 btn.style.border = "none";
             }
+        }
+
+        function show() {
+            const urlDiv = document.getElementById('URL');
+            if (urlDiv.style.maxHeight === '0px' || urlDiv.style.maxHeight === '0' || !urlDiv.style.maxHeight) {
+                urlDiv.style.maxHeight = '100px'; 
+            } else {
+                urlDiv.style.maxHeight = '0';
+            }
+        }
+
+        let isCurtainHidden = false;
+        function hideCurtain() {
+            if (isCurtainHidden) return;
+            isCurtainHidden = true;
+
+            const curtain = document.getElementById('presentation-curtain');
+            const firstHeadline = document.getElementById('first-headline');
+            
+            curtain.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+            curtain.style.backdropFilter = 'blur(0px)';
+            curtain.style.webkitBackdropFilter = 'blur(0px)';
+            curtain.style.opacity = '0'; 
+            
+            setTimeout(() => {
+                curtain.style.display = 'none'; 
+            }, 1500);
+
+            setTimeout(() => {
+                firstHeadline.style.filter = 'blur(0px)';
+                firstHeadline.style.opacity = '1';
+                firstHeadline.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        let isTransformed = false;
+        function transformHeadline() {
+            if (isTransformed) return;
+            isTransformed = true;
+
+            const container = document.getElementById('final-headline');
+            const sub = document.getElementById('fh-sub');
+            const title = document.getElementById('fh-title');
+            const desc = document.getElementById('fh-desc');
+
+            container.style.filter = 'blur(20px)';
+            container.style.opacity = '0';
+            container.style.transform = 'scale(0.95)';
+
+            setTimeout(() => {
+                sub.textContent = '실행력';
+                title.innerHTML = '실천은 즉시.<br />변화는 확실히.';
+                desc.textContent = '좋은 공약의 완성은 빠른 실천입니다. 당선 직후 가장 먼저 교실 비품을 채우고 비상용 교과서를 세팅하여, 변화를 바로 체감할 수 있게 증명하겠습니다.';
+
+                container.style.filter = 'blur(0px)';
+                container.style.opacity = '1';
+                container.style.transform = 'scale(1)';
+            }, 1000);
         }
     </script>
 </body>
