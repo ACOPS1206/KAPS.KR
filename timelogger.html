@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <title>ACOPS-Timelogger</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #000000;
+            --surface-dark: #1c1c1e;
+            --text-main: #ffffff;
+            --text-muted: #858585;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow: hidden;
+        }
+
+        /* 사이드바 */
+        .drawer {
+            width: 300px;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .inbox-button {
+            margin: 20px 36px;
+            background-color: #ffffff;
+            color: #000000;
+            padding: 8px 16px;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .inbox-button:hover { opacity: 0.9; }
+        
+        .sidebar-bottom-actions {
+            margin-top: auto;
+            padding: 20px 36px 32px 36px;
+            display: flex;
+            gap: 12px;
+        }
+        .sidebar-action-btn {
+            flex: 1;
+            background: var(--surface-dark);
+            border: none;
+            color: var(--text-main);
+            padding: 12px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .sidebar-action-btn:hover { background: #2c2c2e; }
+
+        /* 메인 콘텐츠 */
+        .main-content {
+            margin-left: 300px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header-section {
+            padding: 12px 32px;
+            background: #000;
+        }
+
+        .date-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .date-title:hover { color: rgba(255,255,255,0.7); }
+
+        /* 캘린더 요일 바 */
+        .calendar-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 32px;
+        }
+
+        .day-item {
+            text-align: center;
+            flex: 1;
+            cursor: pointer;
+        }
+        .day-name { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 8px; font-weight: 500; }
+        .day-num { width: 32px; height: 32px; line-height: 32px; margin: 0 auto; border-radius: 50%; font-weight: 600; font-size: 1.1rem; }
+        .day-num.active { background-color: #fff; color: #000; box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+
+        /* 타이머 바 */
+        .timer-bar {
+            margin: 16px 32px 0 32px;
+            background: var(--surface-dark);
+            border: none;
+            border-radius: 24px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: opacity 0.3s, margin 0.3s, height 0.3s;
+        }
+        .timer-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            outline: none;
+            font-size: 0.95rem;
+        }
+        .timer-btn {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: #fff;
+            color: #000;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .timer-btn.running { background: #333336; color: white; }
+
+        /* 데모(시간 조정) 슬라이더 바 (Black & White) */
+        #main-demo-slider-panel {
+            margin: 16px 32px 0 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 12px 20px;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* 타임라인 */
+        .timeline-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 0 100px 0;
+            background: #121212;
+            border-radius: 24px 24px 0 0;
+            scroll-behavior: smooth;
+            margin-top: 16px;
+        }
+        .timeline-container::-webkit-scrollbar { display: none; }
+        .timeline-container { -ms-overflow-style: none; scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .timeline-item {
+            display: flex;
+            padding: 4px 10% 4px 5%;
+            min-height: 50px;
+            position: relative;
+        }
+
+        .time-label {
+            width: 75px; text-align: right; padding-right: 16px;
+            color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding-top: 15px;
+        }
+        .time-label.ongoing { color: white; font-weight: bold; }
+
+        .node-line { width: 50px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .bubble {
+            width: 50px; border-radius: 25px; background: #ffffff;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            padding-top: 13px; z-index: 2; box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .bubble:hover { transform: scale(1.05); }
+
+        .timeline-line-solid { position: absolute; width: 2px; left: 50%; transform: translateX(-50%); z-index: 1; }
+        
+        .timeline-line-dashed-custom {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            width: 2px; top: 0; bottom: 0; z-index: 0;
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 50%);
+            -webkit-mask-size: 100% 12px;
+            mask-image: linear-gradient(to bottom, black 50%, transparent 50%);
+            mask-size: 100% 12px;
+        }
+
+        .task-content { padding-left: 20px; flex: 1; padding-top: 13px; cursor: pointer; }
+        .task-title { font-size: 1.15rem; font-weight: 600; margin: 0; line-height: 1.2; letter-spacing: -0.3px; }
+        .task-sub { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px; margin-top: 0; font-weight: 500; }
+        .task-memo { margin-top: 8px; font-size: 0.9rem; color: #999; line-height: 1.5; }
+
+        /* FAB 버튼 */
+        .fab {
+            position: fixed; bottom: 32px; right: 32px; width: 60px; height: 60px; border-radius: 30px;
+            background-color: #ffffff; color: #000000; border: none;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 24px rgba(255,255,255,0.2); cursor: pointer; z-index: 1300; transition: transform 0.2s;
+        }
+        .fab:active { transform: scale(0.95); }
+
+        /* 모바일 하단 네비게이션 바 */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 80px;
+            background: rgba(20,20,22,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            z-index: 1200;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: var(--text-muted); cursor: pointer; transition: color 0.2s;
+        }
+        .nav-item.active { color: var(--text-main); }
+        .nav-item i { font-size: 24px; }
+        .nav-item span { font-size: 10px; font-weight: 600; }
+
+        /* 모달 스타일 */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+            z-index: 9999; align-items: center; justify-content: center;
+        }
+        .modal-box {
+            background: #1c1c1e; padding: 24px; border-radius: 24px; width: 350px;
+            border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            max-height: 90vh; overflow-y: auto;
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .modal-box::-webkit-scrollbar { display: none; }
+        .modal-box h3 { margin-top: 0; font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; display: flex; justify-content: space-between;}
+        
+        .modal-input {
+            width: 100%; padding: 14px; margin: 8px 0; background: #2c2c2e; border: 1px solid transparent;
+            color: white; border-radius: 16px; box-sizing: border-box; outline: none; font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .modal-input:focus { border-color: #ffffff; }
+        textarea.modal-input { resize: none; height: 100px; line-height: 1.5; }
+
+        .modal-btn-cancel { background: none; border: none; color: var(--text-muted); cursor: pointer; font-weight: 600; padding: 12px; border-radius: 12px; }
+        .modal-btn-save { background: #fff; color: #000; border: none; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+
+        .inbox-item {
+            padding: 16px 0; color: #eee;
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem;
+        }
+        .inbox-item button { background: none; border: none; color: #858585; cursor: pointer; padding: 4px; transition: color 0.2s; }
+        .inbox-item button:hover { color: #ef4444; }
+        
+        /* 커스텀 슬라이더 */
+        input[type=range] { -webkit-appearance: none; background: #333336; height: 6px; border-radius: 3px; outline: none; width: 100%; margin: 12px 0;}
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+
+        /* 달력 사이드바 오버레이 */
+        #calendar-sidebar {
+            position: fixed; top: 0; bottom: 0; left: 0; width: 340px; max-width: 85vw;
+            background: rgba(20,20,22,0.95); backdrop-filter: blur(20px); border-right: 1px solid var(--border-color);
+            z-index: 2500; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; padding: 24px;
+        }
+        #calendar-sidebar.open { transform: translateX(0); }
+        .cal-grid-item {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+        }
+        .cal-grid-item:hover { background: rgba(255,255,255,0.1); }
+        .cal-grid-item.active { background: white; color: black; font-weight: bold; box-shadow: 0 4px 12px rgba(255,255,255,0.2); }
+
+        /* 아이콘 모달용 그리드 */
+        .icon-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-height: 300px; overflow-y: auto; margin-top: 8px;
+        }
+        .icon-btn {
+            background: #2c2c2e; border: none; border-radius: 16px; width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #444; transform: scale(1.1); }
+
+        @media (max-width: 768px) {
+            .drawer { display: none; }
+            .main-content { margin-left: 0; padding-bottom: 80px; }
+            .header-section { padding: 12px 20px; }
+            .calendar-bar { padding: 16px 20px; }
+            .timeline-item { padding: 4px 5% 4px 0%; }
+            .time-label { width: 70px; padding-right: 12px; font-size: 0.7rem; }
+            .timer-bar { margin: 16px 16px 0 16px; }
+            #main-demo-slider-panel { margin: 16px 16px 0 16px; padding: 12px 16px; }
+            .fab { bottom: 100px; right: 20px; width: 56px; height: 56px; }
+            .mobile-bottom-nav { display: flex; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 좌측 사이드바 (데스크톱 전용) -->
+    <div class="drawer" id="desktop-drawer">
+        <div id="drawer-inbox" style="display:flex; flex-direction:column; height:100%;">
+            <div class="inbox-button">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 3H4.99c-1.11 0-1.98.89-1.98 2L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.11-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"></path></svg>
+                <span>Inbox</span>
+            </div>
+            <div style="padding: 0 36px;">
+                <input type="text" id="new-inbox-input" placeholder="Add task to inbox..." style="width:100%; background:#1c1c1e; border:none; color:white; padding:14px; border-radius:16px; outline:none; box-sizing: border-box;">
+            </div>
+            <div id="inbox-list" style="padding: 10px 36px; flex: 1; overflow-y: auto;" class="hide-scrollbar">
+                <div style="margin-top: 20px; font-size: 0.85rem; text-align: center; color: var(--text-muted);">Your thoughts will appear here.</div>
+            </div>
+            
+            <div class="sidebar-bottom-actions">
+                <button class="sidebar-action-btn" onclick="toggleDrawerMode('settings')"><i class="ph-bold ph-gear" style="font-size:22px;"></i>&nbsp SETTINGS</button>
+            </div>
+        </div>
+
+        <div id="drawer-settings" style="display:none; flex-direction:column; height:100%;">
+            <div class="inbox-button" onclick="toggleDrawerMode('inbox')">
+                <i class="ph-bold ph-arrow-left" style="font-size: 20px;"></i>
+                <span>Back to Inbox</span>
+            </div>
+            
+            <div style="padding: 10px 36px; flex: 1; overflow-y: auto;" class="hide-scrollbar">
+                <div style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); display: flex; gap: 10px; align-items: center; cursor: pointer;">
+                        <i class="ph-bold ph-stopwatch" style="font-size: 20px;"></i> 스톱워치 표시
+                    </label>
+                    <input type="checkbox" class="show-timer-check" onchange="toggleTimerVisibility(this.checked)" style="width: 22px; height: 22px; cursor: pointer; accent-color: #ffffff;">
+                </div>
+
+                <div style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 0.95rem; font-weight: 600; color: var(--text-main); display: flex; gap: 10px; align-items: center; cursor: pointer;">
+                        <i class="ph-bold ph-gradient" style="font-size: 20px;"></i> 부드러운 진행률 표시
+                    </label>
+                    <input type="checkbox" class="smooth-gradient-check" onchange="toggleSmoothGradient(this.checked)" style="width: 22px; height: 22px; cursor: pointer; accent-color: #ffffff;">
+                </div>
+
+                <div style="margin-bottom: 32px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 0.95rem; font-weight: 600; color: white; display: flex; gap: 10px; align-items: center; cursor: pointer;">
+                            <i class="ph-bold ph-magic-wand" style="font-size: 20px;"></i> 시간 실험 (Demo)
+                        </label>
+                        <input type="checkbox" class="demo-mode-toggle" onchange="toggleDemoMode(this.checked)" style="width: 22px; height: 22px; cursor: pointer; accent-color: white;">
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 6px 0 0 30px;">메인 화면에 시간 조절 슬라이더 표시</p>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight:600;">Timeline Scale</label>
+                    <input type="range" class="scale-slider" min="0.5" max="2.5" step="0.1" value="1.0">
+                </div>
+                <div style="margin-bottom: 32px;">
+                    <label style="font-size: 0.85rem; color: var(--text-muted); font-weight:600;">Gap Ratio</label>
+                    <input type="range" class="gap-slider" min="0.1" max="1.5" step="0.1" value="0.5">
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+                    <button onclick="exportData()" class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-download-simple" style="font-size: 18px;"></i> Backup Data</button>
+                    <label class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; text-align:center; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-upload-simple" style="font-size: 18px;"></i> Restore Data<input type="file" accept=".json" style="display:none;" onchange="importData(event)"></label>
+                </div>
+
+                <div style="display:flex; justify-content:center; align-items: center; margin-top:20px; padding-bottom: 20px;">
+                    <button onclick="clearAllData()" style="background: none; color:#ef4444; border:none; cursor:pointer; font-weight:600; padding:8px; font-size: 0.9rem;">Erase App Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 달력 사이드바 오버레이 -->
+    <div id="calendar-sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2400] hidden opacity-0 transition-opacity duration-300" onclick="toggleCalendarSidebar()"></div>
+    <div id="calendar-sidebar">
+        <div class="flex justify-between items-center mb-8 mt-2 px-2">
+            <button onclick="toggleCalendarSidebar()" class="w-10 h-10 rounded-full bg-[#2c2c2e] flex items-center justify-center text-white/70 hover:text-white transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
+            <button onclick="goToToday(); toggleCalendarSidebar();" class="px-5 py-2 rounded-full text-sm font-bold text-black bg-white hover:opacity-90 transition-opacity shadow-sm">오늘</button>
+        </div>
+        
+        <div class="flex items-center justify-between mb-6 px-2">
+            <button onclick="changeCalMonth(-1)" class="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-colors"><i class="ph-bold ph-caret-left text-xl"></i></button>
+            <h2 class="text-[1.3rem] font-bold text-white tracking-wide" id="cal-sidebar-month-year">March 2026</h2>
+            <button onclick="changeCalMonth(1)" class="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white transition-colors"><i class="ph-bold ph-caret-right text-xl"></i></button>
+        </div>
+        
+        <div class="grid grid-cols-7 gap-1 text-center mb-3 border-b border-white/10 pb-3">
+            <div class="text-[12px] font-bold text-white/40">S</div>
+            <div class="text-[12px] font-bold text-white/40">M</div>
+            <div class="text-[12px] font-bold text-white/40">T</div>
+            <div class="text-[12px] font-bold text-white/40">W</div>
+            <div class="text-[12px] font-bold text-white/40">T</div>
+            <div class="text-[12px] font-bold text-white/40">F</div>
+            <div class="text-[12px] font-bold text-white/40">S</div>
+        </div>
+        
+        <div id="cal-sidebar-grid" class="grid grid-cols-7 gap-y-4 gap-x-1 text-center flex-1 content-start mt-2"></div>
+    </div>
+
+    <!-- 모바일 전용 뷰들 -->
+    <div id="mobile-inbox-view" style="display: none; height: 100vh; width: 100vw; background: var(--bg-dark); flex-direction: column; padding-bottom: 80px; position: fixed; z-index: 50;">
+        <div class="header-section" style="padding-top: 24px;">
+            <div class="date-title"><i class="ph-bold ph-tray"></i> Inbox</div>
+        </div>
+        <div style="padding: 20px;">
+            <input type="text" id="mob-new-inbox-input" placeholder="Add task to inbox..." style="width:100%; background:#1c1c1e; border:none; color:white; padding:14px; border-radius:16px; outline:none; box-sizing: border-box;">
+        </div>
+        <div id="mob-inbox-list" style="padding: 0 20px; flex: 1; overflow-y: auto;" class="hide-scrollbar"></div>
+    </div>
+
+    <div id="mobile-settings-view" style="display: none; height: 100vh; width: 100vw; background: var(--bg-dark); flex-direction: column; padding-bottom: 80px; position: fixed; z-index: 50; overflow-y: auto;" class="hide-scrollbar">
+        <div class="header-section" style="padding-top: 24px;">
+            <div class="date-title"><i class="ph-bold ph-gear"></i> Settings</div>
+        </div>
+        <div style="padding: 20px;" id="mob-settings-content"></div>
+    </div>
+
+    <!-- 메인 컨텐츠 (타임라인) -->
+    <div class="main-content" id="main-timeline-view">
+        <section class="header-section">
+            <div class="date-title group" id="header-date" onclick="toggleCalendarSidebar()"></div>
+        </section>
+
+        <div class="calendar-bar" id="calendar-bar"></div>
+
+        <!-- 메인 화면 시간 데모 슬라이더 -->
+        <div id="main-demo-slider-panel" style="display: none;">
+            <i class="ph-fill ph-clock" style="color: white; font-size: 24px;"></i>
+            <input type="range" id="main-demo-slider" min="0" max="1439" value="720" style="flex:1; margin:0;" oninput="updateDemoTime(this.value)">
+            <span id="main-demo-time-label" style="color: white; font-weight: bold; font-family: monospace; font-size: 16px; min-width: 75px; text-align: right;">12:00 PM</span>
+        </div>
+
+        <!-- 타이머 바 (스톱워치) -->
+        <div class="timer-bar" id="timer-bar-container">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #2c2c2e; display: flex; align-items: center; justify-content: center;">
+                <i class="ph-bold ph-at" id="timer-icon" style="color: #fff; font-size: 18px;"></i>
+            </div>
+            <input type="text" id="timer-input" class="timer-input" placeholder="스톱워치로 일정 기록하기...">
+            <span id="timer-display" style="display:none; font-family: monospace; font-size: 16px; font-weight: bold; margin-right: 8px;">00:00</span>
+            <button id="timer-btn" class="timer-btn" onclick="toggleTimer()">
+                <i class="ph-fill ph-play" id="timer-btn-icon" style="font-size: 18px;"></i>
+            </button>
+        </div>
+
+        <div class="timeline-container" id="timeline-list"></div>
+    </div>
+
+    <!-- 플로팅 추가 버튼 -->
+    <button class="fab" id="main-fab" onclick="showAddModal()">
+        <i class="ph-bold ph-plus" style="font-size: 28px;"></i>
+    </button>
+
+    <!-- 모바일 하단 네비게이션 -->
+    <nav class="mobile-bottom-nav">
+        <div class="nav-item" id="nav-mob-inbox" onclick="switchMobileTab('inbox')">
+            <i class="ph-fill ph-tray"></i>
+            <span>Inbox</span>
+        </div>
+        <div class="nav-item active" id="nav-mob-timeline" onclick="switchMobileTab('timeline')">
+            <i class="ph-fill ph-calendar-check"></i>
+            <span>Timeline</span>
+        </div>
+        <div class="nav-item" id="nav-mob-settings" onclick="switchMobileTab('settings')">
+            <i class="ph-fill ph-gear"></i>
+            <span>Settings</span>
+        </div>
+    </nav>
+
+    <!-- 모달: 일정 추가 -->
+    <div id="add-modal" class="modal-overlay" onclick="if(event.target === this) hideAddModal()">
+        <div class="modal-box">
+            <h3>New Task</h3>
+            <div style="display:flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <button id="m-icon-btn" onclick="showIconModal('add')" style="width: 52px; height: 52px; border-radius: 50%; background: #2c2c2e; border: none; color: white; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink: 0; transition: background 0.2s;">
+                    <i id="m-icon-display" class="ph-bold ph-list-checks" style="font-size: 26px;"></i>
+                </button>
+                <input type="text" id="m-title" class="modal-input" placeholder="What to do?" autocomplete="off" style="margin:0;">
+            </div>
+            
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:600; padding-left:4px;">Start</label>
+                    <input type="time" id="m-time" class="modal-input" style="margin-top:4px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:600; padding-left:4px;">End</label>
+                    <input type="time" id="m-end-time" class="modal-input" style="margin-top:4px;">
+                </div>
+            </div>
+            
+            <textarea id="m-memo" class="modal-input" placeholder="Notes or subtasks (- starts a checklist)..." style="margin-top: 16px;"></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button onclick="hideAddModal()" class="modal-btn-cancel">Cancel</button>
+                <button onclick="addTask()" class="modal-btn-save">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 일정 편집 -->
+    <div id="edit-modal" class="modal-overlay" onclick="if(event.target === this) hideEditModal()">
+        <div class="modal-box">
+            <h3>Edit Task <button onclick="deleteTask()" style="background:none; border:none; color:#ef4444; cursor:pointer; padding:4px;"><i class="ph-bold ph-trash" style="font-size:20px;"></i></button></h3>
+            <div style="display:flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <button id="e-icon-btn" onclick="showIconModal('edit')" style="width: 52px; height: 52px; border-radius: 50%; background: #2c2c2e; border: none; color: white; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink: 0; transition: background 0.2s;">
+                    <i id="e-icon-display" class="ph-bold ph-list-checks" style="font-size: 26px;"></i>
+                </button>
+                <input type="text" id="e-title" class="modal-input" placeholder="What to do?" autocomplete="off" style="margin:0;">
+            </div>
+            
+            <div style="display:flex; gap:12px;">
+                <div style="flex:1;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:600; padding-left:4px;">Start</label>
+                    <input type="time" id="e-time" class="modal-input" style="margin-top:4px;">
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); font-weight:600; padding-left:4px;">End</label>
+                    <input type="time" id="e-end-time" class="modal-input" style="margin-top:4px;">
+                </div>
+            </div>
+            
+            <textarea id="e-memo" class="modal-input" placeholder="Notes or subtasks (- starts a checklist)..." style="margin-top: 16px;"></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button onclick="hideEditModal()" class="modal-btn-cancel">Cancel</button>
+                <button onclick="saveEditTask()" class="modal-btn-save">Update Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달: 아이콘 선택기 -->
+    <div id="icon-modal" class="modal-overlay" onclick="if(event.target === this) hideIconModal()">
+        <div class="modal-box" style="width: 360px;">
+            <h3>Select Icon</h3>
+            <div id="icon-grid" class="icon-grid hide-scrollbar"></div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;">
+                <button onclick="hideIconModal()" class="modal-btn-cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'stProRawData_v13'; 
+        const INBOX_KEY = 'stProInboxData_v13';
+        
+        let allTimelineData = []; 
+        let inboxData = [];
+        let currentDateObj = new Date();
+        let miniCalDate = new Date();
+        let editingEventId = null;
+
+        // View Settings
+        let PX_PER_MIN = 1.6;
+        let GAP_RATIO = 0.5;
+        let showTimer = localStorage.getItem('stShowTimer') !== 'false';
+        let useSmoothGradient = localStorage.getItem('stSmoothGrad') !== 'false';
+        const MIN_PILL_HEIGHT = 50;
+        const MAX_GAP_HEIGHT = 160; 
+
+        // Icon States
+        let selectedAddIcon = 'list-checks';
+        let selectedEditIcon = 'list-checks';
+        let currentIconTarget = null; 
+
+        // Demo Time Settings
+        let useDemoTime = localStorage.getItem('stUseDemoTime') === 'true';
+        let demoTimeMins = 720; 
+
+        const keywordMap = {
+            '메일': 'envelope', '밥': 'fork-knife', '식사': 'fork-knife', '점심': 'fork-knife', '저녁': 'fork-knife',
+            '운동': 'barbell', '헬스': 'barbell', '공부': 'book-open', '독서': 'book-open', '회의': 'monitor', '업무': 'monitor', 
+            '출근': 'briefcase', '개발': 'code', '코딩': 'code', '커피': 'coffee', '쇼핑': 'tote', 
+            '기상': 'sun', '일어': 'sun', '잠': 'bed', '수면': 'bed', '집': 'house', '도착': 'map-pin',
+            '운전': 'car', '전화': 'phone', '기록': 'pen-nib', '샤워': 'shower', '게임': 'game-controller', '준비': 'person-simple-walk'
+        };
+
+        const iconList = [
+            'list-checks', 'envelope', 'fork-knife', 'barbell', 'book-open', 'monitor', 'coffee', 'tote', 'sun', 'moon', 
+            'house', 'map-pin', 'car', 'phone', 'pen-nib', 'shower', 'game-controller', 'person-simple-walk', 'briefcase', 
+            'code', 'airplane-tilt', 'music-note', 'pill', 'credit-card', 'scissors'
+        ];
+
+        function getIconForTitle(title) {
+            for (const [key, val] of Object.entries(keywordMap)) {
+                if (title.includes(key)) return val;
+            }
+            return 'list-checks'; 
+        }
+
+        function getFormatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+        
+        function formatTime12(mins) {
+            let m = mins % 1440; if (m < 0) m += 1440; 
+            const h = Math.floor(m / 60); const ampm = h >= 12 ? 'PM' : 'AM'; 
+            const displayH = h % 12 === 0 ? 12 : h % 12; 
+            return `${displayH}:${(m % 60).toString().padStart(2, '0')} ${ampm}`; 
+        }
+        
+        function formatTime24(mins) {
+            let m = mins % 1440; if (m < 0) m += 1440; 
+            const h = Math.floor(m / 60);
+            return `${String(h).padStart(2,'0')}:${(m % 60).toString().padStart(2, '0')}`; 
+        }
+
+        function formatDurationStr(mins) {
+            if (mins === 0) return ''; 
+            const h = Math.floor(mins / 60); const m = mins % 60; 
+            if (h > 0 && m > 0) return `(${h}h ${m}m)`; 
+            if (h > 0) return `(${h}h)`; 
+            return `(${m}m)`; 
+        }
+
+        function parseMemo(memoText) {
+            if(!memoText) return '';
+            const lines = memoText.split('\n');
+            let html = '<div class="task-memo">';
+            lines.forEach(line => {
+                if(line.trim().startsWith('- ')) {
+                    html += `<div style="display:flex; gap:8px; align-items:start; margin-bottom: 4px;"><i class="ph-bold ph-check-circle" style="margin-top:2px; color:var(--text-main);"></i><span style="color:var(--text-main); font-weight: 500;">${line.substring(2)}</span></div>`;
+                } else {
+                    html += `<div style="margin-bottom: 2px;">${line}</div>`;
+                }
+            });
+            html += '</div>';
+            return html;
+        }
+
+        // --- View Toggles ---
+        window.toggleDrawerMode = function(mode) {
+            if (mode === 'settings') {
+                document.getElementById('drawer-inbox').style.display = 'none';
+                document.getElementById('drawer-settings').style.display = 'flex';
+            } else {
+                document.getElementById('drawer-inbox').style.display = 'flex';
+                document.getElementById('drawer-settings').style.display = 'none';
+            }
+        }
+
+        window.switchMobileTab = function(tabName) {
+            const inboxView = document.getElementById('mobile-inbox-view');
+            const timelineView = document.getElementById('main-timeline-view');
+            const settingsView = document.getElementById('mobile-settings-view');
+            const fab = document.getElementById('main-fab');
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-mob-${tabName}`).classList.add('active');
+
+            inboxView.style.display = 'none';
+            timelineView.style.display = 'none';
+            settingsView.style.display = 'none';
+            fab.style.display = 'none';
+
+            if (tabName === 'inbox') {
+                inboxView.style.display = 'flex';
+            } else if (tabName === 'timeline') {
+                timelineView.style.display = 'flex';
+                fab.style.display = 'flex';
+            } else if (tabName === 'settings') {
+                settingsView.style.display = 'flex';
+            }
+        }
+
+        function toggleTimerVisibility(isOn) {
+            showTimer = isOn;
+            localStorage.setItem('stShowTimer', isOn);
+            document.getElementById('timer-bar-container').style.display = isOn ? 'flex' : 'none';
+            document.querySelectorAll('.show-timer-check').forEach(el => el.checked = isOn);
+        }
+
+        function toggleSmoothGradient(isOn) {
+            useSmoothGradient = isOn;
+            localStorage.setItem('stSmoothGrad', isOn);
+            document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = isOn);
+            renderTimeline();
+        }
+
+        // --- Calendar Sidebar ---
+        window.toggleCalendarSidebar = () => {
+            const sidebar = document.getElementById('calendar-sidebar');
+            const backdrop = document.getElementById('calendar-sidebar-backdrop');
+            if (sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+                backdrop.classList.add('opacity-0');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            } else {
+                miniCalDate = new Date(currentDateObj);
+                renderSidebarCalendar();
+                backdrop.classList.remove('hidden');
+                void backdrop.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+                sidebar.classList.add('open');
+            }
+        }
+
+        window.changeCalMonth = (delta) => {
+            miniCalDate.setMonth(miniCalDate.getMonth() + delta);
+            renderSidebarCalendar();
+        }
+
+        window.renderSidebarCalendar = function() {
+            const grid = document.getElementById('cal-sidebar-grid');
+            const header = document.getElementById('cal-sidebar-month-year');
+            const year = miniCalDate.getFullYear();
+            const month = miniCalDate.getMonth();
+            const monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            
+            header.innerText = `${monthsStr[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            const todayStr = getFormatDate(new Date());
+            const selStr = getFormatDate(currentDateObj);
+
+            let html = '';
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const d = daysInPrevMonth - i;
+                const dateStr = getFormatDate(new Date(year, month - 1, d));
+                html += `<div class="cal-grid-item text-white/20" onclick="selectDate('${dateStr}'); toggleCalendarSidebar();">${d}</div>`;
+            }
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = getFormatDate(new Date(year, month, i));
+                const isSelected = dateStr === selStr;
+                const isToday = dateStr === todayStr;
+                let classes = "cal-grid-item text-white/90 ";
+                if (isSelected) classes += "active bg-white text-black font-bold scale-110 ";
+                else if (isToday) classes += "border border-white/30 ";
+                
+                html += `<div class="${classes}" onclick="selectDate('${dateStr}'); toggleCalendarSidebar();">${i}</div>`;
+            }
+            const totalCells = firstDay + daysInMonth;
+            let nextDays = 1;
+            while (totalCells + nextDays - 1 < 42) {
+                const dateStr = getFormatDate(new Date(year, month + 1, nextDays));
+                html += `<div class="cal-grid-item text-white/20" onclick="selectDate('${dateStr}'); toggleCalendarSidebar();">${nextDays}</div>`;
+                nextDays++;
+            }
+            grid.innerHTML = html;
+        }
+
+        // --- Demo Time Functions ---
+        function getCurrentMins() {
+            if (useDemoTime) return demoTimeMins;
+            return new Date().getHours() * 60 + new Date().getMinutes();
+        }
+
+        function toggleDemoMode(isOn) {
+            useDemoTime = isOn;
+            localStorage.setItem('stUseDemoTime', isOn);
+            const panel = document.getElementById('main-demo-slider-panel');
+            if (panel) panel.style.display = isOn ? 'flex' : 'none';
+            if(isOn) {
+                const now = new Date();
+                demoTimeMins = now.getHours() * 60 + now.getMinutes();
+                document.getElementById('main-demo-slider').value = demoTimeMins;
+                document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins);
+            }
+            document.querySelectorAll('.demo-mode-toggle').forEach(el => el.checked = isOn);
+            renderTimeline();
+        }
+
+        function updateDemoTime(mins) {
+            demoTimeMins = parseInt(mins);
+            document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins);
+            renderTimeline();
+        }
+
+        // --- Core Data & Logic ---
+        function loadData() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) { allTimelineData = JSON.parse(stored); } 
+                else {
+                    const todayStr = getFormatDate(new Date()); 
+                    allTimelineData = [
+                        { id: 1, date: todayStr, title: '기상 및 아침 루틴', startMin: 480, durationMins: 90, iconName: 'sun', memo: '- 물 마시기\n- 스트레칭' },
+                        { id: 2, date: todayStr, title: '업무 시작', startMin: 600, durationMins: 120, iconName: 'monitor', memo: '메일 확인 및 데일리 스크럼' }
+                    ]; 
+                    saveData();
+                }
+                const storedInbox = localStorage.getItem(INBOX_KEY);
+                if (storedInbox) { inboxData = JSON.parse(storedInbox); }
+            } catch (e) { allTimelineData = []; inboxData = []; }
+
+            // Sync Settings to Mobile
+            document.getElementById('mob-settings-content').innerHTML = document.getElementById('drawer-settings').innerHTML;
+            const mobBackBtn = document.querySelector('#mob-settings-content .inbox-button');
+            if (mobBackBtn) mobBackBtn.remove();
+
+            // Bind UI
+            document.getElementById('timer-bar-container').style.display = showTimer ? 'flex' : 'none';
+            document.querySelectorAll('.show-timer-check').forEach(el => el.checked = showTimer);
+            document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = useSmoothGradient);
+            document.querySelectorAll('.demo-mode-toggle').forEach(el => el.checked = useDemoTime);
+            document.getElementById('main-demo-slider-panel').style.display = useDemoTime ? 'flex' : 'none';
+            if(useDemoTime) {
+                document.getElementById('main-demo-slider').value = demoTimeMins;
+                document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins);
+            }
+            document.querySelectorAll('.scale-slider').forEach(el => el.value = PX_PER_MIN);
+            document.querySelectorAll('.gap-slider').forEach(el => el.value = GAP_RATIO);
+
+            const grid = document.getElementById('icon-grid');
+            grid.innerHTML = iconList.map(ic => `<button class="icon-btn" onclick="selectIcon('${ic}')"><i class="ph-bold ph-${ic}" style="font-size:24px;"></i></button>`).join('');
+
+            // Slider listeners
+            document.querySelectorAll('.scale-slider').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    PX_PER_MIN = parseFloat(e.target.value); localStorage.setItem('stScale', PX_PER_MIN);
+                    document.querySelectorAll('.scale-slider').forEach(s => s.value = PX_PER_MIN); renderTimeline();
+                });
+            });
+            document.querySelectorAll('.gap-slider').forEach(el => {
+                el.addEventListener('input', (e) => {
+                    GAP_RATIO = parseFloat(e.target.value); localStorage.setItem('stGapRatio', GAP_RATIO);
+                    document.querySelectorAll('.gap-slider').forEach(s => s.value = GAP_RATIO); renderTimeline();
+                });
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allTimelineData));
+            renderTimeline();
+        }
+
+        function saveInbox() {
+            localStorage.setItem(INBOX_KEY, JSON.stringify(inboxData));
+            renderInbox();
+        }
+
+        window.renderCalendar = function() {
+            const titleEl = document.getElementById('header-date');
+            const barEl = document.getElementById('calendar-bar');
+            if(!titleEl || !barEl) return;
+            
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            titleEl.innerHTML = `${months[currentDateObj.getMonth()]} <span style="font-weight:400; color:var(--text-muted); margin-left:4px;">${currentDateObj.getFullYear()}</span> <i class="ph-bold ph-calendar-blank text-xl text-white/60 group-hover:text-primary transition-colors ml-2"></i>`;
+
+            let startOfWeek = new Date(currentDateObj);
+            startOfWeek.setDate(currentDateObj.getDate() - currentDateObj.getDay());
+            
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const currentSelectedStr = getFormatDate(currentDateObj);
+
+            let html = '';
+            for(let i=0; i<7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(d.getDate() + i);
+                const dStr = getFormatDate(d);
+                const isSelected = dStr === currentSelectedStr;
+                html += `<div class="day-item" onclick="selectDate('${d.toISOString()}')"><div class="day-name" style="color: ${isSelected ? '#fff' : 'var(--text-muted)'}; font-weight: ${isSelected ? '600' : 'normal'}">${days[i]}</div><div class="day-num ${isSelected ? 'active' : ''}">${d.getDate()}</div></div>`;
+            }
+            barEl.innerHTML = html;
+        }
+
+        function renderInbox() {
+            const lists = [document.getElementById('inbox-list'), document.getElementById('mob-inbox-list')];
+            lists.forEach(list => {
+                if(!list) return;
+                list.innerHTML = '';
+                if (inboxData.length === 0) {
+                    list.innerHTML = '<div style="margin-top: 40px; font-size: 0.9rem; text-align: center; color: var(--text-muted);">Your thoughts will appear here.</div>';
+                    return;
+                }
+                inboxData.forEach(item => {
+                    list.innerHTML += `<div class="inbox-item"><span style="font-weight:500; font-size: 1rem;">• ${item.title}</span><button onclick="deleteInboxItem(${item.id})"><i class="ph-bold ph-trash" style="font-size:20px;"></i></button></div>`;
+                });
+            });
+        }
+
+        window.renderTimeline = function() {
+            const container = document.getElementById('timeline-list');
+            const currentSelectedStr = getFormatDate(currentDateObj);
+            const todayStr = getFormatDate(new Date()); 
+            const nowMins = getCurrentMins(); 
+
+            let data = allTimelineData.filter(item => item.date === currentSelectedStr);
+            data.sort((a, b) => a.startMin - b.startMin);
+
+            let html = '';
+            let lastEndMin = null;
+
+            if(data.length === 0) {
+                container.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:100px; opacity:0.4;"><i class="ph-fill ph-calendar-blank" style="font-size:5rem; margin-bottom:16px; color:#555;"></i><p style="color:#858585; font-size:1.1rem;">일정이 없습니다. 달력을 열어 추가하세요.</p></div>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                if (lastEndMin !== null && item.startMin > lastEndMin) {
+                    const gapMins = item.startMin - lastEndMin;
+                    if (gapMins > 0) {
+                        let calculatedGapHeight = Math.max(40, gapMins * PX_PER_MIN * GAP_RATIO);
+                        const gapHeight = Math.min(calculatedGapHeight, MAX_GAP_HEIGHT); 
+                        let gapProgress = 0;
+                        if (currentSelectedStr < todayStr) gapProgress = 100;
+                        else if (currentSelectedStr > todayStr) gapProgress = 0;
+                        else {
+                            if (nowMins >= lastEndMin + gapMins) gapProgress = 100;
+                            else if (nowMins >= lastEndMin && nowMins < lastEndMin + gapMins) gapProgress = ((nowMins - lastEndMin) / gapMins) * 100;
+                        }
+                        const gradOffset = useSmoothGradient ? 3 : 0;
+                        const gapLineStyle = `background: linear-gradient(to bottom, #ffffff ${Math.max(0, gapProgress - gradOffset)}%, #333336 ${Math.min(100, gapProgress + gradOffset)}%);`;
+                        html += `<div class="timeline-item" style="min-height: ${gapHeight}px; padding-top:0; padding-bottom:0;"><div class="time-label" style="opacity:0;">Gap</div><div class="node-line"><div class="timeline-line-dashed-custom" style="${gapLineStyle}"></div></div><div class="task-content" style="padding-top:0; display:flex; align-items:center; cursor:default;"><p class="task-sub" style="margin:0; font-size:13px; font-weight:500;"><i class="ph-bold ph-timer"></i> Interval over. What's next?</p></div></div>`;
+                    }
+                }
+                lastEndMin = lastEndMin === null ? item.startMin + item.durationMins : Math.max(lastEndMin, item.startMin + item.durationMins);
+                const iconName = item.iconName || getIconForTitle(item.title);
+                const pillHeight = Math.max(MIN_PILL_HEIGHT, item.durationMins * PX_PER_MIN); 
+                let timeProgress = 0; let isOngoing = false; let isPast = false; let isFuture = false;
+                if (currentSelectedStr < todayStr) { isPast = true; timeProgress = 100; } 
+                else if (currentSelectedStr > todayStr) { isFuture = true; timeProgress = 0; }
+                else {
+                    if (nowMins >= item.startMin + item.durationMins) { isPast = true; timeProgress = 100; }
+                    else if (nowMins >= item.startMin && nowMins < item.startMin + item.durationMins) { isOngoing = true; timeProgress = Math.max(0, Math.min(100, ((nowMins - item.startMin) / item.durationMins) * 100)); }
+                    else { isFuture = true; timeProgress = 0; }
+                }
+                const gradOffset = useSmoothGradient ? 3 : 0;
+                let pillStyle = `height: ${pillHeight}px;`;
+                if (isOngoing) pillStyle += `background: linear-gradient(to bottom, #ffffff ${Math.max(0, timeProgress - gradOffset)}%, #333336 ${Math.min(100, timeProgress + gradOffset)}%);`;
+                else if (isPast) pillStyle += `background-color: #ffffff;`;
+                else pillStyle += `background-color: #333336;`;
+                const lineStyle = isOngoing ? `background: linear-gradient(to bottom, #ffffff ${Math.max(0, timeProgress - gradOffset)}%, #333336 ${Math.min(100, timeProgress + gradOffset)}%);` : (isPast ? `background-color: #ffffff;` : `background-color: #333336;`);
+                const iconColor = isFuture ? '#ffffff' : '#000000';
+                const titleColor = isFuture ? 'var(--text-muted)' : '#ffffff';
+                let timeRangeText = `<p class="task-sub">${formatTime12(item.startMin)} - ${formatTime12(item.startMin + item.durationMins)} ${formatDurationStr(item.durationMins)}</p>`;
+                if (isOngoing) timeRangeText = `<p class="task-sub" style="color: #fff; font-weight:700;">${formatDurationStr((item.startMin + item.durationMins) - nowMins).replace(/[()]/g, '')} left</p>`;
+                html += `<div class="timeline-item" data-ongoing="${isOngoing}"><div class="time-label ${isOngoing ? 'ongoing' : ''}"><span>${formatTime12(item.startMin)}</span>${item.durationMins > 0 && pillHeight > 80 ? `<span>${formatTime12(item.startMin + item.durationMins)}</span>` : ''}</div><div class="node-line"><div class="timeline-line-solid" style="${lineStyle} ${index === 0 ? 'top: 25px;' : 'top: -10px;'} ${index === data.length - 1 ? 'bottom: unset; height: ' + (pillHeight + 25) + 'px;' : 'bottom: -10px;'}"></div><div class="bubble" style="${pillStyle}" onclick="openEditModal(${item.id})"><i class="ph-bold ph-${iconName}" style="font-size: 24px; color: ${iconColor};"></i></div></div><div class="task-content" onclick="openEditModal(${item.id})">${timeRangeText}<p class="task-title" style="color: ${titleColor};">${item.title}</p>${parseMemo(item.memo)}</div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Modals Logic ---
+        window.showAddModal = function() { 
+            const now = new Date(); let h = now.getHours(); let m = Math.ceil(now.getMinutes() / 5) * 5; if(m === 60) { m = 0; h++; }
+            let endH = (h + 1) % 24;
+            document.getElementById('m-time').value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            document.getElementById('m-end-time').value = `${String(endH).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+            document.getElementById('m-title').value = ''; document.getElementById('m-memo').value = '';
+            selectedAddIcon = 'list-checks'; document.getElementById('m-icon-display').className = 'ph-bold ph-list-checks';
+            document.getElementById('add-modal').style.display = 'flex'; 
+            setTimeout(() => document.getElementById('m-title').focus(), 100);
+        }
+        window.hideAddModal = function() { document.getElementById('add-modal').style.display = 'none'; }
+        
+        window.addTask = function() {
+            const title = document.getElementById('m-title').value.trim();
+            const timeStr = document.getElementById('m-time').value;
+            const endStr = document.getElementById('m-end-time').value;
+            if(!title || !timeStr || !endStr) return;
+            const [sh, sm] = timeStr.split(':'); const [eh, em] = endStr.split(':');
+            const startMin = parseInt(sh) * 60 + parseInt(sm); let endMin = parseInt(eh) * 60 + parseInt(em);
+            if (endMin < startMin) endMin += 1440;
+            allTimelineData.push({ id: Date.now(), date: getFormatDate(currentDateObj), title: title, startMin: startMin, durationMins: endMin - startMin, iconName: selectedAddIcon, memo: document.getElementById('m-memo').value });
+            saveData(); hideAddModal();
+        }
+
+        window.openEditModal = function(id) {
+            editingEventId = id; const item = allTimelineData.find(t => t.id === id); if(!item) return;
+            document.getElementById('e-title').value = item.title;
+            document.getElementById('e-time').value = formatTime24(item.startMin);
+            document.getElementById('e-end-time').value = formatTime24(item.startMin + item.durationMins);
+            document.getElementById('e-memo').value = item.memo || '';
+            selectedEditIcon = item.iconName || getIconForTitle(item.title);
+            document.getElementById('e-icon-display').className = `ph-bold ph-${selectedEditIcon}`;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+        window.hideEditModal = function() { document.getElementById('edit-modal').style.display = 'none'; }
+
+        window.saveEditTask = function() {
+            const item = allTimelineData.find(t => t.id === editingEventId); if(!item) return;
+            const [sh, sm] = document.getElementById('e-time').value.split(':');
+            const [eh, em] = document.getElementById('e-end-time').value.split(':');
+            const startMin = parseInt(sh) * 60 + parseInt(sm); let endMin = parseInt(eh) * 60 + parseInt(em);
+            if (endMin < startMin) endMin += 1440;
+            item.title = document.getElementById('e-title').value.trim();
+            item.startMin = startMin; item.durationMins = endMin - startMin;
+            item.memo = document.getElementById('e-memo').value; item.iconName = selectedEditIcon;
+            saveData(); hideEditModal();
+        }
+
+        window.deleteTask = function() { allTimelineData = allTimelineData.filter(t => t.id !== editingEventId); saveData(); hideEditModal(); }
+        window.showIconModal = function(target) { currentIconTarget = target; document.getElementById('icon-modal').style.display = 'flex'; }
+        window.hideIconModal = function() { document.getElementById('icon-modal').style.display = 'none'; }
+        window.selectIcon = function(iconName) { if (currentIconTarget === 'add') { selectedAddIcon = iconName; document.getElementById('m-icon-display').className = `ph-bold ph-${iconName}`; } else { selectedEditIcon = iconName; document.getElementById('e-icon-display').className = `ph-bold ph-${iconName}`; } hideIconModal(); }
+        window.showSettingsModal = function() { document.querySelectorAll('.scale-slider').forEach(el => el.value = PX_PER_MIN); document.querySelectorAll('.gap-slider').forEach(el => el.value = GAP_RATIO); document.getElementById('settings-modal').style.display = 'flex'; }
+        window.hideSettingsModal = function() { document.getElementById('settings-modal').style.display = 'none'; }
+
+        window.exportData = function() {
+            const exportObj = { timeline: allTimelineData, inbox: inboxData, settings: { scale: PX_PER_MIN, gapRatio: GAP_RATIO, showTimer: showTimer, useSmoothGradient: useSmoothGradient } };
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" }); 
+            const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = `structured_pro.json`; 
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+        }
+        
+        window.importData = function(e) {
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = (event) => { 
+                try { 
+                    const data = JSON.parse(event.target.result); 
+                    if (data.timeline) {
+                        allTimelineData = data.timeline; inboxData = data.inbox || [];
+                        if (data.settings) { PX_PER_MIN = data.settings.scale || 1.6; GAP_RATIO = data.settings.gapRatio || 0.5; showTimer = data.settings.showTimer !== false; useSmoothGradient = data.settings.useSmoothGradient !== false; }
+                        saveData(); saveInbox(); alert("복원 성공!"); 
+                    }
+                } catch (err) { alert("파일 오류"); } 
+            }; 
+            reader.readAsText(file); e.target.value = '';
+        }
+        
+        window.clearAllData = function() { if(confirm("초기화하시겠습니까?")) { allTimelineData = []; inboxData = []; saveData(); saveInbox(); } }
+
+        // Render functions wrapper
+        window.renderAll = () => { renderCalendar(); renderTimeline(); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData(); window.renderAll(); renderInbox();
+        });
+        setInterval(renderTimeline, 60000);
+    </script>
+</body>
+</html>
