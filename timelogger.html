@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>Structured Web - Cloud Pro</title>
+    <title>Timelogger - ACOPS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
@@ -147,6 +147,17 @@
         }
         .timer-btn.running { background: #333336; color: white; }
 
+        /* 데모(시간 조정) 슬라이더 바 */
+        #main-demo-slider-panel {
+            margin: 16px 32px 0 32px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 12px 20px;
+            align-items: center;
+            gap: 16px;
+        }
+
         /* 타임라인 */
         .timeline-container {
             flex: 1;
@@ -218,7 +229,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; }
         .nav-item.active { color: var(--text-main); }
 
-        /* 모달 스타일 */
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             z-index: 9999; align-items: center; justify-content: center;
@@ -236,7 +246,7 @@
         .modal-input:focus { border-color: #fff; }
 
         input[type=range] { -webkit-appearance: none; background: #333336; height: 6px; border-radius: 3px; outline: none; width: 100%; margin: 12px 0;}
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; cursor: pointer; }
 
         #calendar-sidebar {
             position: fixed; top: 0; bottom: 0; left: 0; width: 340px; max-width: 85vw;
@@ -250,24 +260,11 @@
 
         .icon-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-height: 300px; overflow-y: auto; margin-top: 8px; scrollbar-width: none; }
         .icon-grid::-webkit-scrollbar { display: none; }
-        .icon-btn { background: #2c2c2e; border-radius: 16px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: transform 0.2s;}
-        .icon-btn:hover { background: #444; transform: scale(1.1); }
-
-        .spinner { border: 3px solid rgba(255,255,255,0.1); border-left-color: #fff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
-        .btn-outline:hover { background: rgba(255,255,255,0.1); }
+        .icon-btn { background: #2c2c2e; border-radius: 16px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; }
 
         @media (max-width: 768px) {
             .drawer { display: none; }
             .main-content { margin-left: 0; padding-bottom: 80px; }
-            .header-section { padding: 12px 20px; }
-            .calendar-bar { padding: 16px 20px; }
-            .timeline-item { padding: 4px 5% 4px 0%; }
-            .time-label { width: 70px; padding-right: 12px; font-size: 0.7rem; }
-            .timer-bar { margin: 16px 16px 0 16px; }
-            .fab { bottom: 100px; right: 20px; width: 56px; height: 56px; }
             .mobile-bottom-nav { display: flex; }
         }
     </style>
@@ -286,7 +283,7 @@
             </div>
             <div id="inbox-list" style="padding: 10px 36px; flex: 1; overflow-y: auto;" class="hide-scrollbar"></div>
             <div class="sidebar-bottom-actions">
-                <button class="sidebar-action-btn" onclick="window.toggleDrawerMode('settings')"><i class="ph-bold ph-gear" style="font-size:22px;"></i> Settings & Sync</button>
+                <button class="sidebar-action-btn" onclick="window.toggleDrawerMode('settings')"><i class="ph-bold ph-gear" style="font-size:22px;"></i> Settings</button>
             </div>
         </div>
 
@@ -296,18 +293,6 @@
                 <span>Back to Inbox</span>
             </div>
             <div style="padding: 10px 36px; flex: 1; overflow-y: auto;" class="hide-scrollbar">
-                
-                <!-- 계정 관리 및 클라우드 연동 상태 -->
-                <div style="margin-bottom: 24px; padding: 16px; background: rgba(52, 211, 153, 0.1); border-radius: 16px; border: 1px solid rgba(52, 211, 153, 0.2);">
-                    <label class="account-status-text" style="font-size: 0.95rem; font-weight: 600; color: #34D399; display: flex; gap: 10px; align-items: center; margin-bottom: 12px; word-break: break-all;">
-                        <i class="ph-fill ph-user" style="font-size: 24px;"></i> 게스트 모드
-                    </label>
-                    <div style="display:flex; gap:8px;">
-                        <button class="btn-auth-action btn-outline" onclick="window.showAuthModal()" style="flex:1;">클라우드 계정 연동</button>
-                        <button class="btn-auth-logout btn-outline" onclick="window.handleLogout()" style="display:none; flex:1; border-color: rgba(239,68,68,0.3); color: #ef4444;">연동 해제</button>
-                    </div>
-                </div>
-
                 <div style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 16px; display: flex; justify-content: space-between; align-items: center;">
                     <label style="font-size: 0.95rem; font-weight: 600; color: white; display: flex; gap: 10px; align-items: center; cursor: pointer;">
                         <i class="ph-bold ph-stopwatch" style="font-size: 20px;"></i> 스톱워치 표시
@@ -337,8 +322,9 @@
                     <input type="range" class="gap-slider" min="0.1" max="1.5" step="0.1" value="0.5">
                 </div>
 
-                <button onclick="window.exportData()" class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-download-simple" style="font-size: 18px;"></i> Backup Local Data</button>
-                <button onclick="window.clearAllData()" style="background: none; color:#ef4444; border:none; cursor:pointer; font-weight:600; padding:8px; font-size: 0.9rem; width:100%; margin-top:20px;">Erase Cloud Data</button>
+                <button onclick="window.exportData()" class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-download-simple" style="font-size: 18px;"></i> Backup Data</button>
+                <label class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-upload-simple" style="font-size: 18px;"></i> Restore Data<input type="file" id="import-file-desktop" accept=".json" style="display:none;" onchange="window.importData(event)"></label>
+                <button onclick="window.clearAllData()" style="background: none; color:#ef4444; border:none; cursor:pointer; font-weight:600; padding:8px; font-size: 0.9rem; width:100%; margin-top:20px;">Erase App Data</button>
             </div>
         </div>
     </div>
@@ -380,9 +366,9 @@
 
         <div class="calendar-bar" id="calendar-bar"></div>
 
-        <div id="main-demo-slider-panel" style="display: none; margin: 16px 32px 0 32px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 12px 20px; align-items: center; gap: 16px;">
+        <div id="main-demo-slider-panel" style="display: none;">
             <i class="ph-fill ph-clock" style="color: white; font-size: 24px;"></i>
-            <input type="range" id="main-demo-slider" min="0" max="1439" value="720" style="flex:1; margin:0; background: rgba(255,255,255,0.2);" oninput="window.updateDemoTime(this.value)">
+            <input type="range" id="main-demo-slider" min="0" max="1439" value="720" style="flex:1; margin:0;" oninput="window.updateDemoTime(this.value)">
             <span id="main-demo-time-label" style="color: white; font-weight: bold; font-family: monospace; font-size: 16px; min-width: 75px; text-align: right;">12:00 PM</span>
         </div>
 
@@ -392,14 +378,7 @@
             <span id="timer-display" style="display:none; font-family: monospace; font-size: 16px; font-weight: bold; margin-right: 8px;">00:00</span>
             <button id="timer-btn" class="timer-btn" onclick="window.toggleTimer()"><i class="ph-fill ph-play" id="timer-btn-icon" style="font-size: 18px;"></i></button>
         </div>
-        
-        <!-- 로딩 표시기 -->
-        <div id="timeline-loading" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:100px; opacity:0.6;">
-            <div class="spinner mb-4"></div>
-            <p style="color:#858585; font-size:1.1rem;">클라우드 데이터 불러오는 중...</p>
-        </div>
-
-        <div class="timeline-container" id="timeline-list" style="display:none;"></div>
+        <div class="timeline-container" id="timeline-list"></div>
     </div>
 
     <button class="fab" id="main-fab" onclick="window.showAddModal()"><i class="ph-bold ph-plus" style="font-size: 28px;"></i></button>
@@ -409,22 +388,6 @@
         <div class="nav-item active" id="nav-mob-timeline" onclick="window.switchMobileTab('timeline')"><i class="ph-fill ph-calendar-check"></i><span>Timeline</span></div>
         <div class="nav-item" id="nav-mob-settings" onclick="window.switchMobileTab('settings')"><i class="ph-fill ph-gear"></i><span>Settings</span></div>
     </nav>
-
-    <!-- 모달: 커스텀 계정 인증 -->
-    <div id="auth-modal" class="modal-overlay" onclick="if(event.target === this) window.hideAuthModal()">
-        <div class="modal-box" style="width: 320px;">
-            <h3>클라우드 연동</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">원하시는 아이디와 암호를 입력하시면 모든 데이터가 클라우드를 통해 동기화됩니다. (가입 및 로그인 겸용)</p>
-            <input type="text" id="auth-id" class="modal-input" placeholder="원하는 ID 입력" autocomplete="off">
-            <input type="password" id="auth-password" class="modal-input" placeholder="비밀번호 입력">
-            <p id="auth-error-msg" style="color: #ef4444; font-size: 0.85rem; margin-top: 8px; display: none;"></p>
-            
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:24px;">
-                <button onclick="window.hideAuthModal()" class="modal-btn-cancel">취소</button>
-                <button onclick="window.submitAuth()" class="modal-btn-save">연동하기</button>
-            </div>
-        </div>
-    </div>
 
     <!-- 모달: 일정 추가/편집 -->
     <div id="add-modal" class="modal-overlay" onclick="if(event.target === this) window.hideAddModal()">
@@ -471,218 +434,20 @@
         <div class="modal-box" id="modal-confirm-content"></div>
     </div>
 
-    <!-- 클라우드 파이어베이스 연동 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+    <script>
         // 전역 상수 및 설정
         window.MIN_PILL_HEIGHT = 50;
         window.MAX_GAP_HEIGHT = 160;
+        const STORAGE_KEY = 'stProRawData_v18'; 
+        const INBOX_KEY = 'stProInboxData_v18';
 
         let allTimelineData = [], inboxData = [], currentDateObj = new Date(), miniCalDate = new Date(), editingEventId = null;
-        let PX_PER_MIN = 1.6, GAP_RATIO = 0.5, showTimer = true, useSmoothGradient = true;
-        let selectedAddIcon = 'list-checks', selectedEditIcon = 'list-checks', currentIconTarget = null, useDemoTime = false, demoTimeMins = 720;
+        let PX_PER_MIN = 1.6, GAP_RATIO = 0.5, showTimer = localStorage.getItem('stShowTimer') !== 'false', useSmoothGradient = localStorage.getItem('stSmoothGrad') !== 'false';
+        let selectedAddIcon = 'list-checks', selectedEditIcon = 'list-checks', currentIconTarget = null, useDemoTime = localStorage.getItem('stUseDemoTime') === 'true', demoTimeMins = 720;
         let timerInterval = null, timerStartObj = null;
 
         const keywordMap = {'메일': 'envelope', '밥': 'fork-knife', '식사': 'fork-knife', '점심': 'fork-knife', '저녁': 'fork-knife', '운동': 'barbell', '헬스': 'barbell', '공부': 'book-open', '독서': 'book-open', '회의': 'monitor', '업무': 'monitor', '출근': 'briefcase', '개발': 'code', '코딩': 'code', '커피': 'coffee', '쇼핑': 'tote', '기상': 'sun', '일어': 'sun', '잠': 'bed', '수면': 'bed', '집': 'house', '도착': 'map-pin', '운전': 'car', '전화': 'phone', '기록': 'pen-nib', '샤워': 'shower', '게임': 'game-controller', '준비': 'person-simple-walk'};
         const iconList = ['list-checks', 'envelope', 'fork-knife', 'barbell', 'book-open', 'monitor', 'coffee', 'tote', 'sun', 'moon', 'house', 'map-pin', 'car', 'phone', 'pen-nib', 'shower', 'game-controller', 'person-simple-walk', 'briefcase', 'code', 'airplane-tilt', 'music-note', 'pill', 'credit-card', 'scissors'];
-
-        // --- 자체 동기화 시스템 (SHA-256 Hashing) ---
-        // 샌드박스의 Email/Password 제한을 우회하기 위해 Public DB 경로를 활용한 커스텀 인증 시스템
-        let currentSyncId = localStorage.getItem('customSyncId') || null;
-        let currentSyncHash = localStorage.getItem('customSyncHash') || null;
-
-        async function generateHash(id, pw) {
-            const msgBuffer = new TextEncoder().encode(id + '::structured::' + pw);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        // Firebase Setup
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-        let app, auth, db, user;
-        let isCloudReady = false;
-        let unsubSync = null;
-
-        if (firebaseConfig) {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            
-            signInAnonymously(auth).catch(e => console.error("Guest login failed", e));
-
-            onAuthStateChanged(auth, (currentUser) => {
-                if (currentUser) {
-                    user = currentUser;
-                    updateAuthUI();
-                    setupCloudSync();
-                } else {
-                    user = null;
-                }
-            });
-        }
-
-        // 커스텀 로그인 모달
-        window.showAuthModal = () => {
-            document.getElementById('auth-modal').style.display = 'flex';
-            document.getElementById('auth-error-msg').style.display = 'none';
-            document.getElementById('auth-id').value = '';
-            document.getElementById('auth-password').value = '';
-        };
-
-        window.hideAuthModal = () => { document.getElementById('auth-modal').style.display = 'none'; };
-        
-        window.submitAuth = async () => {
-            const idVal = document.getElementById('auth-id').value.trim();
-            const pass = document.getElementById('auth-password').value;
-            const errEl = document.getElementById('auth-error-msg');
-            errEl.style.display = 'none';
-            
-            if(!idVal || !pass) { errEl.innerText = "아이디와 비밀번호를 입력해주세요."; errEl.style.display = 'block'; return; }
-            
-            try {
-                const hash = await generateHash(idVal, pass);
-                currentSyncId = idVal;
-                currentSyncHash = hash;
-                localStorage.setItem('customSyncId', currentSyncId);
-                localStorage.setItem('customSyncHash', currentSyncHash);
-
-                window.hideAuthModal();
-                window.showToast(`'${idVal}' 계정으로 연동되었습니다!`);
-                
-                updateAuthUI();
-                setupCloudSync(); // 바뀐 해시 경로로 동기화 재설정
-            } catch(e) {
-                errEl.innerText = "인증 처리 오류: " + e.message;
-                errEl.style.display = 'block';
-            }
-        };
-
-        window.handleLogout = () => {
-            currentSyncId = null;
-            currentSyncHash = null;
-            localStorage.removeItem('customSyncId');
-            localStorage.removeItem('customSyncHash');
-            
-            window.showToast("연동이 해제되어 게스트 모드로 돌아갑니다.");
-            updateAuthUI();
-            setupCloudSync(); 
-        };
-
-        function updateAuthUI() {
-            document.querySelectorAll('.account-status-text').forEach(el => {
-                if(!currentSyncId) {
-                    el.innerHTML = '<i class="ph-fill ph-user" style="font-size: 24px;"></i> 기기 로컬 모드 (게스트)';
-                    el.style.color = '#858585';
-                    el.parentElement.style.background = 'rgba(255,255,255,0.05)';
-                    el.parentElement.style.borderColor = 'transparent';
-                } else {
-                    el.innerHTML = `<i class="ph-fill ph-cloud-check" style="font-size: 24px;"></i> ${currentSyncId} 연동 중`;
-                    el.style.color = '#34D399';
-                    el.parentElement.style.background = 'rgba(52, 211, 153, 0.1)';
-                    el.parentElement.style.borderColor = 'rgba(52, 211, 153, 0.2)';
-                }
-            });
-            
-            document.querySelectorAll('.btn-auth-action').forEach(el => el.style.display = currentSyncId ? 'none' : 'block');
-            document.querySelectorAll('.btn-auth-logout').forEach(el => el.style.display = currentSyncId ? 'block' : 'none');
-        }
-
-        // 경로를 결정하는 헬퍼 함수
-        function getSyncDocRef() {
-            if (currentSyncHash) {
-                // 커스텀 연동된 경우 Public 경로에 해시된 값으로 저장 (샌드박스 정책 우회 및 동기화 구현)
-                return doc(db, 'artifacts', appId, 'public', 'data', 'userSync', currentSyncHash);
-            } else if (user) {
-                // 게스트 상태인 경우 본인의 Private 경로에 저장
-                return doc(db, 'artifacts', appId, 'users', user.uid, 'appState', 'main');
-            }
-            return null;
-        }
-
-        function setupCloudSync() {
-            const docRef = getSyncDocRef();
-            if (!docRef) return;
-
-            if (unsubSync) unsubSync(); // 기존 연결 끊기
-            
-            unsubSync = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    allTimelineData = data.timeline || [];
-                    inboxData = data.inbox || [];
-                    
-                    if (data.settings) {
-                        PX_PER_MIN = data.settings.scale || 1.6;
-                        GAP_RATIO = data.settings.gapRatio || 0.5;
-                        showTimer = data.settings.showTimer !== false;
-                        useSmoothGradient = data.settings.useSmoothGradient !== false;
-                        useDemoTime = data.settings.useDemoTime || false;
-                        demoTimeMins = data.settings.demoTimeMins || 720;
-                        applySettingsToUI();
-                    }
-                } else {
-                    // 데이터가 없는 새로운 환경/새 계정인 경우, 현재 들고 있는 데이터를 클라우드에 밀어넣음 (초기화 방지)
-                    if(allTimelineData.length === 0) {
-                        const todayStr = getFormatDate(new Date());
-                        const nowMins = getCurrentMins();
-                        allTimelineData = [
-                            { id: 1, date: todayStr, title: '기상 및 아침 루틴', startMin: 480, durationMins: 90, iconName: 'sun', memo: '- 물 마시기\n- 스트레칭' },
-                            { id: 2, date: todayStr, title: '업무 시작', startMin: Math.max(0, nowMins - 30), durationMins: 120, iconName: 'monitor', memo: '메일 확인 및 데일리 스크럼' }
-                        ];
-                    }
-                    pushToCloud();
-                }
-
-                if(!isCloudReady) {
-                    isCloudReady = true;
-                    document.getElementById('timeline-loading').style.display = 'none';
-                    document.getElementById('timeline-list').style.display = 'block';
-                }
-                
-                window.renderCalendar();
-                window.renderTimeline();
-                window.renderInbox();
-            }, (error) => {
-                console.error("Sync error:", error);
-            });
-        }
-
-        function pushToCloud() {
-            const docRef = getSyncDocRef();
-            if (!docRef) return;
-
-            setDoc(docRef, {
-                timeline: allTimelineData,
-                inbox: inboxData,
-                settings: {
-                    scale: PX_PER_MIN, gapRatio: GAP_RATIO, showTimer: showTimer, 
-                    useSmoothGradient: useSmoothGradient, useDemoTime: useDemoTime, demoTimeMins: demoTimeMins
-                },
-                updatedAt: Date.now()
-            }).catch(e => console.error("Save error", e));
-        }
-
-        function applySettingsToUI() {
-            document.querySelectorAll('.show-timer-check').forEach(el => el.checked = showTimer); 
-            document.getElementById('timer-bar-container').style.display = showTimer ? 'flex' : 'none';
-            document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = useSmoothGradient);
-            document.querySelectorAll('.demo-mode-toggle').forEach(el => el.checked = useDemoTime); 
-            const panel = document.getElementById('main-demo-slider-panel');
-            if(panel) panel.style.display = useDemoTime ? 'flex' : 'none';
-            if(useDemoTime) {
-                document.getElementById('main-demo-slider').value = demoTimeMins;
-                document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins);
-            }
-            document.querySelectorAll('.scale-slider').forEach(el => el.value = PX_PER_MIN);
-            document.querySelectorAll('.gap-slider').forEach(el => el.value = GAP_RATIO);
-        }
-
 
         // 유틸 함수
         function getIconForTitle(title) { for (const [key, val] of Object.entries(keywordMap)) { if (title.includes(key)) return val; } return 'list-checks'; }
@@ -696,73 +461,49 @@
         // 전역 함수 정의 (window 객체 바인딩)
         window.toggleDrawerMode = (mode) => { document.getElementById('drawer-inbox').style.display = mode === 'settings' ? 'none' : 'flex'; document.getElementById('drawer-settings').style.display = mode === 'settings' ? 'flex' : 'none'; };
         window.switchMobileTab = (tabName) => { document.getElementById('mobile-inbox-view').style.display = tabName === 'inbox' ? 'flex' : 'none'; document.getElementById('main-timeline-view').style.display = tabName === 'timeline' ? 'flex' : 'none'; document.getElementById('mobile-settings-view').style.display = tabName === 'settings' ? 'flex' : 'none'; document.getElementById('main-fab').style.display = tabName === 'timeline' ? 'flex' : 'none'; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-mob-${tabName}`).classList.add('active'); };
-        
-        window.toggleTimerVisibility = (isOn) => { showTimer = isOn; applySettingsToUI(); pushToCloud(); };
-        window.toggleSmoothGradient = (isOn) => { useSmoothGradient = isOn; applySettingsToUI(); pushToCloud(); window.renderTimeline(); };
-        window.toggleDemoMode = (isOn) => { useDemoTime = isOn; if(isOn) { const now = new Date(); demoTimeMins = now.getHours() * 60 + now.getMinutes(); } applySettingsToUI(); pushToCloud(); window.renderTimeline(); };
+        window.toggleTimerVisibility = (isOn) => { showTimer = isOn; localStorage.setItem('stShowTimer', isOn); document.getElementById('timer-bar-container').style.display = isOn ? 'flex' : 'none'; document.querySelectorAll('.show-timer-check').forEach(el => el.checked = isOn); };
+        window.toggleSmoothGradient = (isOn) => { useSmoothGradient = isOn; localStorage.setItem('stSmoothGrad', isOn); document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = isOn); window.renderTimeline(); };
+        window.toggleDemoMode = (isOn) => { useDemoTime = isOn; localStorage.setItem('stUseDemoTime', isOn); document.getElementById('main-demo-slider-panel').style.display = isOn ? 'flex' : 'none'; if(isOn) { const now = new Date(); demoTimeMins = now.getHours() * 60 + now.getMinutes(); document.getElementById('main-demo-slider').value = demoTimeMins; document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins); } document.querySelectorAll('.demo-mode-toggle').forEach(el => el.checked = isOn); window.renderTimeline(); };
         window.updateDemoTime = (mins) => { demoTimeMins = parseInt(mins); document.getElementById('main-demo-time-label').innerText = formatTime12(demoTimeMins); window.renderTimeline(); };
-        window.saveDemoTime = () => { pushToCloud(); };
 
         window.toggleCalendarSidebar = () => { const s = document.getElementById('calendar-sidebar'), b = document.getElementById('calendar-sidebar-backdrop'); if (s.classList.contains('open')) { s.classList.remove('open'); b.classList.add('opacity-0'); setTimeout(() => b.classList.add('hidden'), 300); } else { miniCalDate = new Date(currentDateObj); window.renderSidebarCalendar(); b.classList.remove('hidden'); void b.offsetWidth; b.classList.remove('opacity-0'); s.classList.add('open'); } };
         window.changeCalMonth = (delta) => { miniCalDate.setMonth(miniCalDate.getMonth() + delta); window.renderSidebarCalendar(); };
-        
-        window.renderSidebarCalendar = () => { 
-            const grid = document.getElementById('cal-sidebar-grid'), header = document.getElementById('cal-sidebar-month-year'), year = miniCalDate.getFullYear(), month = miniCalDate.getMonth(), monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; 
-            header.innerText = `${monthsStr[month]} ${year}`; 
-            const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), daysInPrevMonth = new Date(year, month, 0).getDate(), todayStr = getFormatDate(new Date()), selStr = getFormatDate(currentDateObj); 
-            let html = ''; 
-            for (let i = firstDay - 1; i >= 0; i--) { const d = daysInPrevMonth - i; html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate(${year}, ${month-1}, ${d}); window.toggleCalendarSidebar();">${d}</div>`; } 
-            for (let i = 1; i <= daysInMonth; i++) { const dStr = getFormatDate(new Date(year, month, i)), isSelected = dStr === selStr, isToday = dStr === todayStr; html += `<div class="cal-grid-item text-white/90 ${isSelected ? 'active' : ''} ${isToday&&!isSelected ? 'border border-white/30' : ''}" onclick="window.selectDate(${year}, ${month}, ${i}); window.toggleCalendarSidebar();">${i}</div>`; } 
-            const totalCells = firstDay + daysInMonth; let nextDays = 1; 
-            while (totalCells + nextDays - 1 < 42) { html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate(${year}, ${month+1}, ${nextDays}); window.toggleCalendarSidebar();">${nextDays}</div>`; nextDays++; } 
-            grid.innerHTML = html; 
-        };
+        window.renderSidebarCalendar = () => { const grid = document.getElementById('cal-sidebar-grid'), header = document.getElementById('cal-sidebar-month-year'), year = miniCalDate.getFullYear(), month = miniCalDate.getMonth(), monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; header.innerText = `${monthsStr[month]} ${year}`; const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), daysInPrevMonth = new Date(year, month, 0).getDate(), todayStr = getFormatDate(new Date()), selStr = getFormatDate(currentDateObj); let html = ''; for (let i = firstDay - 1; i >= 0; i--) { const d = daysInPrevMonth - i; html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate('${getFormatDate(new Date(year, month-1, d))}'); window.toggleCalendarSidebar();">${d}</div>`; } for (let i = 1; i <= daysInMonth; i++) { const dStr = getFormatDate(new Date(year, month, i)), isSelected = dStr === selStr, isToday = dStr === todayStr; html += `<div class="cal-grid-item text-white/90 ${isSelected ? 'active' : ''} ${isToday&&!isSelected ? 'border border-white/30' : ''}" onclick="window.selectDate('${dStr}'); window.toggleCalendarSidebar();">${i}</div>`; } grid.innerHTML = html; };
 
-        window.selectDate = (y, m, d) => { currentDateObj = new Date(y, m, d); window.renderCalendar(); window.renderTimeline(); };
-        window.changeDate = (days) => { currentDateObj.setDate(currentDateObj.getDate() + days); window.renderCalendar(); window.renderTimeline(); };
+        window.selectDate = (dateStr) => { currentDateObj = new Date(dateStr); window.renderCalendar(); window.renderTimeline(); };
         window.goToToday = () => { currentDateObj = new Date(); window.renderCalendar(); window.renderTimeline(); };
-        
         window.showAddModal = () => { const now = new Date(); let h = now.getHours(), m = Math.ceil(now.getMinutes() / 5) * 5; if(m === 60) { m = 0; h++; } document.getElementById('m-time').value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; document.getElementById('m-end-time').value = `${String((h+1)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`; document.getElementById('m-title').value = ''; document.getElementById('m-memo').value = ''; selectedAddIcon = 'list-checks'; document.getElementById('m-icon-display').className = 'ph-bold ph-list-checks'; document.getElementById('add-modal').style.display = 'flex'; };
         window.hideAddModal = () => document.getElementById('add-modal').style.display = 'none';
-        
-        document.getElementById('m-title').addEventListener('input', (e) => { const title = e.target.value; selectedAddIcon = getIconForTitle(title); document.getElementById('m-icon-display').className = `ph-bold ph-${selectedAddIcon}`; });
-
-        window.addTask = () => { const title = document.getElementById('m-title').value.trim(), timeStr = document.getElementById('m-time').value, endStr = document.getElementById('m-end-time').value; if(!title || !timeStr || !endStr) return; const [sh, sm] = timeStr.split(':'), [eh, em] = endStr.split(':'); const sMin = parseInt(sh)*60+parseInt(sm); let eMin = parseInt(eh)*60+parseInt(em); if (eMin < sMin) eMin += 1440; allTimelineData.push({ id: Date.now(), date: getFormatDate(currentDateObj), title, startMin: sMin, durationMins: eMin - sMin, iconName: selectedAddIcon, memo: document.getElementById('m-memo').value }); pushToCloud(); window.renderTimeline(); window.hideAddModal(); };
-        
+        window.addTask = () => { const title = document.getElementById('m-title').value.trim(), timeStr = document.getElementById('m-time').value, endStr = document.getElementById('m-end-time').value; if(!title || !timeStr || !endStr) return; const [sh, sm] = timeStr.split(':'), [eh, em] = endStr.split(':'); const sMin = parseInt(sh)*60+parseInt(sm); let eMin = parseInt(eh)*60+parseInt(em); if (eMin < sMin) eMin += 1440; allTimelineData.push({ id: Date.now(), date: getFormatDate(currentDateObj), title, startMin: sMin, durationMins: eMin - sMin, iconName: selectedAddIcon, memo: document.getElementById('m-memo').value }); saveData(); window.hideAddModal(); };
         window.openEditModal = (id) => { editingEventId = id; const item = allTimelineData.find(t => t.id === id); if(!item) return; document.getElementById('e-title').value = item.title; document.getElementById('e-time').value = formatTime24(item.startMin); document.getElementById('e-end-time').value = formatTime24(item.startMin + item.durationMins); document.getElementById('e-memo').value = item.memo || ''; selectedEditIcon = item.iconName || getIconForTitle(item.title); document.getElementById('e-icon-display').className = `ph-bold ph-${selectedEditIcon}`; document.getElementById('edit-modal').style.display = 'flex'; };
         window.hideEditModal = () => document.getElementById('edit-modal').style.display = 'none';
-        
-        document.getElementById('e-title').addEventListener('input', (e) => { const title = e.target.value; selectedEditIcon = getIconForTitle(title); document.getElementById('e-icon-display').className = `ph-bold ph-${selectedEditIcon}`; });
-
-        window.saveEditTask = () => { const item = allTimelineData.find(t => t.id === editingEventId); if(!item) return; const [sh, sm] = document.getElementById('e-time').value.split(':'), [eh, em] = document.getElementById('e-end-time').value.split(':'); const sMin = parseInt(sh)*60+parseInt(sm); let eMin = parseInt(eh)*60+parseInt(em); if (eMin < sMin) eMin += 1440; Object.assign(item, { title: document.getElementById('e-title').value.trim(), startMin: sMin, durationMins: eMin - sMin, memo: document.getElementById('e-memo').value, iconName: selectedEditIcon }); pushToCloud(); window.renderTimeline(); window.hideEditModal(); };
-        window.deleteTask = () => { allTimelineData = allTimelineData.filter(t => t.id !== editingEventId); pushToCloud(); window.renderTimeline(); window.hideEditModal(); };
-        
+        window.saveEditTask = () => { const item = allTimelineData.find(t => t.id === editingEventId); if(!item) return; const [sh, sm] = document.getElementById('e-time').value.split(':'), [eh, em] = document.getElementById('e-end-time').value.split(':'); const sMin = parseInt(sh)*60+parseInt(sm); let eMin = parseInt(eh)*60+parseInt(em); if (eMin < sMin) eMin += 1440; Object.assign(item, { title: document.getElementById('e-title').value.trim(), startMin: sMin, durationMins: eMin - sMin, memo: document.getElementById('e-memo').value, iconName: selectedEditIcon }); saveData(); window.hideEditModal(); };
+        window.deleteTask = () => { allTimelineData = allTimelineData.filter(t => t.id !== editingEventId); saveData(); window.hideEditModal(); };
         window.showIconModal = (target) => { currentIconTarget = target; document.getElementById('icon-modal').style.display = 'flex'; };
         window.hideIconModal = () => document.getElementById('icon-modal').style.display = 'none';
         window.selectIcon = (iconName) => { if (currentIconTarget === 'add') { selectedAddIcon = iconName; document.getElementById('m-icon-display').className = `ph-bold ph-${iconName}`; } else { selectedEditIcon = iconName; document.getElementById('e-icon-display').className = `ph-bold ph-${iconName}`; } window.hideIconModal(); };
         
-        // 로컬 백업 기능
+        // 백업 기능 (데스크톱, 모바일 통합)
         window.exportData = () => { const b = new Blob([JSON.stringify({timeline: allTimelineData, inbox: inboxData, settings: {scale: PX_PER_MIN, gapRatio: GAP_RATIO, showTimer, useSmoothGradient}})], {type: "application/json"}); const u = URL.createObjectURL(b), l = document.createElement("a"); l.href = u; l.download = `structured_pro.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); };
-        
-        window.clearAllData = () => {
-            document.getElementById('modal-confirm-content').innerHTML = `
-                <div class="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-4 mx-auto"><i class="ph-bold ph-trash text-red-500 text-3xl"></i></div>
-                <h3 class="text-white text-xl font-bold text-center mb-2">데이터 초기화</h3>
-                <p class="text-[#858585] text-[15px] text-center mb-8">연동된 경우 클라우드의 모든 데이터가 삭제됩니다.<br>이 작업은 되돌릴 수 없습니다.</p>
-                <div class="flex gap-3">
-                    <button onclick="document.getElementById('modal-confirm').style.display='none'" class="flex-1 bg-[#2A2A2C] hover:bg-[#333336] text-white py-4 rounded-2xl font-bold text-[15px] transition-colors">취소</button>
-                    <button onclick="window.confirmClear()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-bold text-[15px] shadow-[0_4px_12px_rgba(239,68,68,0.4)] transition-all">확인</button>
-                </div>
-            `;
-            document.getElementById('modal-confirm').style.display = 'flex';
+        window.importData = (e) => { 
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = (event) => { 
+                try { 
+                    const data = JSON.parse(event.target.result); 
+                    if (data.timeline) {
+                        allTimelineData = data.timeline; inboxData = data.inbox || [];
+                        if (data.settings) { PX_PER_MIN = data.settings.scale || 1.6; GAP_RATIO = data.settings.gapRatio || 0.5; showTimer = data.settings.showTimer !== false; useSmoothGradient = data.settings.useSmoothGradient !== false; }
+                        saveData(); saveInbox(); window.showToast("데이터 복원 성공!"); 
+                    }
+                } catch (err) { window.showToast("파일을 읽을 수 없습니다.", true); } 
+            }; 
+            reader.readAsText(file); e.target.value = '';
         };
 
-        window.confirmClear = () => {
-            allTimelineData = []; inboxData = []; 
-            pushToCloud(); window.renderTimeline(); window.renderInbox();
-            document.getElementById('modal-confirm').style.display='none'; 
-            window.showToast('모든 데이터가 삭제되었습니다.');
-        };
+        window.clearAllData = () => { if(confirm("모든 데이터를 삭제하시겠습니까?")) { allTimelineData = []; inboxData = []; saveData(); saveInbox(); window.showToast("초기화 완료"); } };
+
+        function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(allTimelineData)); window.renderTimeline(); }
+        function saveInbox() { localStorage.setItem(INBOX_KEY, JSON.stringify(inboxData)); window.renderInbox(); }
 
         window.renderCalendar = function() {
             const titleEl = document.getElementById('header-date'), barEl = document.getElementById('calendar-bar'), months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -770,7 +511,7 @@
             titleEl.innerHTML = `${months[currentDateObj.getMonth()]} <span style="font-weight:400; color:var(--text-muted); margin-left:4px;">${currentDateObj.getFullYear()}</span> <i class="ph-bold ph-calendar-blank text-xl text-white/60 ml-2"></i>`;
             let startOfWeek = new Date(currentDateObj); startOfWeek.setDate(currentDateObj.getDate() - currentDateObj.getDay());
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], selStr = getFormatDate(currentDateObj);
-            let html = ''; for(let i=0; i<7; i++) { const d = new Date(startOfWeek); d.setDate(d.getDate() + i); const dStr = getFormatDate(d), isSelected = dStr === selStr; html += `<div class="day-item" onclick="window.selectDate(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})"><div class="day-name" style="color: ${isSelected ? '#fff' : 'var(--text-muted)'}">${days[i]}</div><div class="day-num ${isSelected ? 'active' : ''}">${d.getDate()}</div></div>`; }
+            let html = ''; for(let i=0; i<7; i++) { const d = new Date(startOfWeek); d.setDate(d.getDate() + i); const dStr = getFormatDate(d), isSelected = dStr === selStr; html += `<div class="day-item" onclick="window.selectDate('${d.toISOString()}')"><div class="day-name" style="color: ${isSelected ? '#fff' : 'var(--text-muted)'}">${days[i]}</div><div class="day-num ${isSelected ? 'active' : ''}">${d.getDate()}</div></div>`; }
             barEl.innerHTML = html;
         };
 
@@ -778,7 +519,7 @@
             const lists = [document.getElementById('inbox-list'), document.getElementById('mob-inbox-list')];
             lists.forEach(list => { if(!list) return; list.innerHTML = ''; if (inboxData.length === 0) { list.innerHTML = '<div style="margin-top: 40px; font-size: 0.9rem; text-align: center; color: var(--text-muted);">Your thoughts will appear here.</div>'; return; } inboxData.forEach(item => { list.innerHTML += `<div class="inbox-item"><span style="font-weight:500; font-size: 1rem;">• ${item.title}</span><button onclick="window.deleteInboxItem(${item.id})"><i class="ph-bold ph-trash" style="font-size:20px;"></i></button></div>`; }); });
         };
-        window.deleteInboxItem = (id) => { inboxData = inboxData.filter(item => item.id !== id); pushToCloud(); window.renderInbox(); };
+        window.deleteInboxItem = (id) => { inboxData = inboxData.filter(item => item.id !== id); saveInbox(); };
 
         window.handleInboxAdd = (e) => {
             if (e.key === 'Enter') {
@@ -786,7 +527,7 @@
                 if(!val) return;
                 inboxData.push({ id: Date.now(), title: val });
                 e.target.value = '';
-                pushToCloud(); window.renderInbox();
+                saveInbox();
             }
         };
 
@@ -826,24 +567,30 @@
             container.innerHTML = html;
         };
 
-        window.toggleTimer = () => { const b = document.getElementById('timer-btn'), i = document.getElementById('timer-btn-icon'), d = document.getElementById('timer-display'), inp = document.getElementById('timer-input'); if(timerInterval) { clearInterval(timerInterval); timerInterval = null; const elapsed = Math.floor((new Date() - timerStartObj) / 1000), dur = Math.ceil(elapsed / 60), title = inp.value || '스톱워치 기록'; if(elapsed > 0) { allTimelineData.push({ id: Date.now(), date: getFormatDate(new Date()), title, startMin: timerStartObj.getHours()*60+timerStartObj.getMinutes(), durationMins: dur, iconName: getIconForTitle(title), memo: '' }); pushToCloud(); window.renderTimeline(); } b.classList.remove('running'); i.className = 'ph-fill ph-play'; d.style.display = 'none'; inp.disabled = false; inp.value = ''; } else { timerStartObj = new Date(); b.classList.add('running'); i.className = 'ph-fill ph-square'; d.style.display = 'inline'; d.innerText = '00:00'; inp.disabled = true; timerInterval = setInterval(() => { const s = Math.floor((new Date() - timerStartObj) / 1000); d.innerText = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }, 1000); } };
-
-        window.showToast = (msg, isError = false) => { const toast = document.getElementById('toast'), tMsg = document.getElementById('toast-msg'), tIcon = document.getElementById('toast-icon'); tMsg.innerText = msg; tIcon.className = isError ? 'ph-fill ph-warning-circle text-red-400' : 'ph-fill ph-check-circle text-white'; toast.classList.remove('opacity-0', '-translate-y-4'); setTimeout(() => toast.classList.add('opacity-0', '-translate-y-4'), 2500); };
+        window.toggleTimer = () => { const b = document.getElementById('timer-btn'), i = document.getElementById('timer-btn-icon'), d = document.getElementById('timer-display'), inp = document.getElementById('timer-input'); if(timerInterval) { clearInterval(timerInterval); timerInterval = null; const elapsed = Math.floor((new Date() - timerStartObj) / 1000), dur = Math.ceil(elapsed / 60), title = inp.value || '스톱워치 기록'; if(elapsed > 0) { allTimelineData.push({ id: Date.now(), date: getFormatDate(new Date()), title, startMin: timerStartObj.getHours()*60+timerStartObj.getMinutes(), durationMins: dur, iconName: getIconForTitle(title), memo: '' }); saveData(); } b.classList.remove('running'); i.className = 'ph-fill ph-play'; d.style.display = 'none'; inp.disabled = false; inp.value = ''; } else { timerStartObj = new Date(); b.classList.add('running'); i.className = 'ph-fill ph-square'; d.style.display = 'inline'; d.innerText = '00:00'; inp.disabled = true; timerInterval = setInterval(() => { const s = Math.floor((new Date() - timerStartObj) / 1000); d.innerText = `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }, 1000); } };
 
         document.addEventListener('DOMContentLoaded', () => { 
-            // 데스크탑 설정 메뉴를 모바일에 복사
+            try { const s = localStorage.getItem(STORAGE_KEY); if (s) allTimelineData = JSON.parse(s); else { const todayStr = getFormatDate(new Date()); allTimelineData = [{ id: 1, date: todayStr, title: '아침 루틴', startMin: 480, durationMins: 90, iconName: 'sun', memo: '- 물 마시기' }]; saveData(); } const si = localStorage.getItem(INBOX_KEY); if (si) inboxData = JSON.parse(si); } catch(e){}
+            
+            // 데스크탑 설정 메뉴를 모바일에 복사하여 이벤트 리스너를 유지할 수 있도록 세팅
             document.getElementById('mob-settings-content').innerHTML = document.getElementById('drawer-settings').innerHTML;
             const mb = document.querySelector('#mob-settings-content .inbox-button'); if(mb) mb.remove();
+            
+            // 파일 입력 요소 (input type="file")의 onchange 이벤트가 복사 과정에서 날아갈 수 있어 명시적으로 추가
+            const mobileImportInput = document.querySelector('#mob-settings-content input[type="file"]');
+            if(mobileImportInput) mobileImportInput.onchange = window.importData;
 
+            document.querySelectorAll('.show-timer-check').forEach(el => el.checked = showTimer); document.getElementById('timer-bar-container').style.display = showTimer ? 'flex' : 'none';
+            document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = useSmoothGradient);
+            document.querySelectorAll('.demo-mode-toggle').forEach(el => el.checked = useDemoTime); document.getElementById('main-demo-slider-panel').style.display = useDemoTime ? 'flex' : 'none';
             document.getElementById('icon-grid').innerHTML = iconList.map(ic => `<button class="icon-btn" onclick="window.selectIcon('${ic}')"><i class="ph-bold ph-${ic}" style="font-size:24px;"></i></button>`).join('');
             
-            document.querySelectorAll('.scale-slider').forEach(el => { el.oninput = (e) => { PX_PER_MIN = parseFloat(e.target.value); document.querySelectorAll('.scale-slider').forEach(s => s.value = PX_PER_MIN); window.renderTimeline(); }; el.onchange = () => pushToCloud(); });
-            document.querySelectorAll('.gap-slider').forEach(el => { el.oninput = (e) => { GAP_RATIO = parseFloat(e.target.value); document.querySelectorAll('.gap-slider').forEach(s => s.value = GAP_RATIO); window.renderTimeline(); }; el.onchange = () => pushToCloud(); });
-            
-            updateAuthUI();
+            document.querySelectorAll('.scale-slider').forEach(el => { el.value = PX_PER_MIN; el.oninput = (e) => { PX_PER_MIN = parseFloat(e.target.value); localStorage.setItem('stScale', PX_PER_MIN); document.querySelectorAll('.scale-slider').forEach(s => s.value = PX_PER_MIN); window.renderTimeline(); }; });
+            document.querySelectorAll('.gap-slider').forEach(el => { el.value = GAP_RATIO; el.oninput = (e) => { GAP_RATIO = parseFloat(e.target.value); localStorage.setItem('stGapRatio', GAP_RATIO); document.querySelectorAll('.gap-slider').forEach(s => s.value = GAP_RATIO); window.renderTimeline(); }; });
+
+            window.renderCalendar(); window.renderTimeline(); window.renderInbox(); 
         });
-        
-        setInterval(() => { if(isCloudReady) window.renderTimeline(); }, 60000);
+        setInterval(window.renderTimeline, 60000);
     </script>
 </body>
 </html>
