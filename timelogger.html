@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-    <title>Structured Web - Offline Pro</title>
+    <title>Timelogger - ACOPS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
@@ -11,6 +11,7 @@
         :root {
             --bg-dark: #000000;
             --surface-dark: #1c1c1e;
+            --accent-white: #ffffff;
             --text-main: #ffffff;
             --text-muted: #858585;
             --border-color: rgba(255, 255, 255, 0.1);
@@ -86,9 +87,6 @@
         .header-section {
             padding: 12px 32px;
             background: #000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .date-title {
@@ -102,26 +100,6 @@
         }
         .date-title:hover { color: rgba(255,255,255,0.7); }
 
-        .nav-arrows {
-            display: flex;
-            gap: 8px;
-        }
-        .nav-arrows button {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .nav-arrows button:hover { background: rgba(255,255,255,0.2); }
-
-        /* 캘린더 요일 바 */
         .calendar-bar {
             display: flex;
             justify-content: space-between;
@@ -169,7 +147,7 @@
         }
         .timer-btn.running { background: #333336; color: white; }
 
-        /* 데모 슬라이더 패널 */
+        /* 데모(시간 조정) 슬라이더 바 */
         #main-demo-slider-panel {
             margin: 16px 32px 0 32px;
             background: rgba(255, 255, 255, 0.05);
@@ -242,9 +220,7 @@
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 8px 24px rgba(255,255,255,0.2); cursor: pointer; z-index: 1300; transition: transform 0.2s;
         }
-        .fab:active { transform: scale(0.95); }
 
-        /* 모바일 하단 네비게이션 */
         .mobile-bottom-nav {
             display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 80px;
             background: rgba(20,20,22,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -253,7 +229,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); cursor: pointer; }
         .nav-item.active { color: var(--text-main); }
 
-        /* 모달 스타일 */
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             z-index: 9999; align-items: center; justify-content: center;
@@ -290,13 +265,6 @@
         @media (max-width: 768px) {
             .drawer { display: none; }
             .main-content { margin-left: 0; padding-bottom: 80px; }
-            .header-section { padding: 12px 20px; }
-            .calendar-bar { padding: 16px 20px; }
-            .timeline-item { padding: 4px 5% 4px 0%; }
-            .time-label { width: 70px; padding-right: 12px; font-size: 0.7rem; }
-            .timer-bar { margin: 16px 16px 0 16px; }
-            #main-demo-slider-panel { margin: 16px 16px 0 16px; padding: 12px 16px; }
-            .fab { bottom: 100px; right: 20px; width: 56px; height: 56px; }
             .mobile-bottom-nav { display: flex; }
         }
     </style>
@@ -355,6 +323,7 @@
                 </div>
 
                 <button onclick="window.exportData()" class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-download-simple" style="font-size: 18px;"></i> Backup Data</button>
+                <label class="modal-input" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:600; background: rgba(255,255,255,0.05); border: none;"><i class="ph-bold ph-upload-simple" style="font-size: 18px;"></i> Restore Data<input type="file" id="import-file-desktop" accept=".json" style="display:none;" onchange="window.importData(event)"></label>
                 <button onclick="window.clearAllData()" style="background: none; color:#ef4444; border:none; cursor:pointer; font-weight:600; padding:8px; font-size: 0.9rem; width:100%; margin-top:20px;">Erase App Data</button>
             </div>
         </div>
@@ -393,10 +362,6 @@
     <div class="main-content" id="main-timeline-view">
         <section class="header-section">
             <div class="date-title group" id="header-date" onclick="window.toggleCalendarSidebar()"></div>
-            <div class="nav-arrows">
-                <button onclick="window.changeDate(-1)"><i class="ph-bold ph-caret-left"></i></button>
-                <button onclick="window.changeDate(1)"><i class="ph-bold ph-caret-right"></i></button>
-            </div>
         </section>
 
         <div class="calendar-bar" id="calendar-bar"></div>
@@ -459,12 +424,22 @@
 
     <div id="icon-modal" class="modal-overlay" onclick="if(event.target === this) window.hideIconModal()"><div class="modal-box" style="width: 360px;"><h3>Select Icon</h3><div id="icon-grid" class="icon-grid hide-scrollbar"></div><div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px;"><button onclick="window.hideIconModal()" class="modal-btn-cancel">Close</button></div></div></div>
 
+    <!-- 토스트 메시지 -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 bg-[#2c2c2e] text-white px-6 py-3 rounded-full shadow-2xl z-[5000] opacity-0 transition-all pointer-events-none flex items-center gap-2">
+        <i id="toast-icon"></i><span id="toast-msg"></span>
+    </div>
+
+    <!-- 확인 모달 -->
+    <div id="modal-confirm" class="modal-overlay" style="z-index: 6000;">
+        <div class="modal-box" id="modal-confirm-content"></div>
+    </div>
+
     <script>
-        // 전역 설정 객체
+        // 전역 상수 및 설정
         window.MIN_PILL_HEIGHT = 50;
         window.MAX_GAP_HEIGHT = 160;
-        const STORAGE_KEY = 'stProRawData_v17'; 
-        const INBOX_KEY = 'stProInboxData_v17';
+        const STORAGE_KEY = 'stProRawData_v18'; 
+        const INBOX_KEY = 'stProInboxData_v18';
 
         let allTimelineData = [], inboxData = [], currentDateObj = new Date(), miniCalDate = new Date(), editingEventId = null;
         let PX_PER_MIN = 1.6, GAP_RATIO = 0.5, showTimer = localStorage.getItem('stShowTimer') !== 'false', useSmoothGradient = localStorage.getItem('stSmoothGrad') !== 'false';
@@ -474,6 +449,7 @@
         const keywordMap = {'메일': 'envelope', '밥': 'fork-knife', '식사': 'fork-knife', '점심': 'fork-knife', '저녁': 'fork-knife', '운동': 'barbell', '헬스': 'barbell', '공부': 'book-open', '독서': 'book-open', '회의': 'monitor', '업무': 'monitor', '출근': 'briefcase', '개발': 'code', '코딩': 'code', '커피': 'coffee', '쇼핑': 'tote', '기상': 'sun', '일어': 'sun', '잠': 'bed', '수면': 'bed', '집': 'house', '도착': 'map-pin', '운전': 'car', '전화': 'phone', '기록': 'pen-nib', '샤워': 'shower', '게임': 'game-controller', '준비': 'person-simple-walk'};
         const iconList = ['list-checks', 'envelope', 'fork-knife', 'barbell', 'book-open', 'monitor', 'coffee', 'tote', 'sun', 'moon', 'house', 'map-pin', 'car', 'phone', 'pen-nib', 'shower', 'game-controller', 'person-simple-walk', 'briefcase', 'code', 'airplane-tilt', 'music-note', 'pill', 'credit-card', 'scissors'];
 
+        // 유틸 함수
         function getIconForTitle(title) { for (const [key, val] of Object.entries(keywordMap)) { if (title.includes(key)) return val; } return 'list-checks'; }
         function getFormatDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
         function formatTime12(mins) { let m = mins % 1440; if (m < 0) m += 1440; const h = Math.floor(m / 60), ampm = h >= 12 ? 'PM' : 'AM', displayH = h % 12 === 0 ? 12 : h % 12; return `${displayH}:${(m % 60).toString().padStart(2, '0')} ${ampm}`; }
@@ -482,6 +458,7 @@
         function parseMemo(memoText) { if(!memoText) return ''; const lines = memoText.split('\n'); let html = '<div class="task-memo">'; lines.forEach(line => { if(line.trim().startsWith('- ')) { html += `<div style="display:flex; gap:8px; align-items:start; margin-bottom: 4px;"><i class="ph-bold ph-check-circle" style="margin-top:2px; color:white;"></i><span style="color:white; font-weight: 500;">${line.substring(2)}</span></div>`; } else { html += `<div style="margin-bottom: 2px;">${line}</div>`; } }); html += '</div>'; return html; }
         function getCurrentMins() { return useDemoTime ? demoTimeMins : new Date().getHours() * 60 + new Date().getMinutes(); }
 
+        // 전역 함수 정의 (window 객체 바인딩)
         window.toggleDrawerMode = (mode) => { document.getElementById('drawer-inbox').style.display = mode === 'settings' ? 'none' : 'flex'; document.getElementById('drawer-settings').style.display = mode === 'settings' ? 'flex' : 'none'; };
         window.switchMobileTab = (tabName) => { document.getElementById('mobile-inbox-view').style.display = tabName === 'inbox' ? 'flex' : 'none'; document.getElementById('main-timeline-view').style.display = tabName === 'timeline' ? 'flex' : 'none'; document.getElementById('mobile-settings-view').style.display = tabName === 'settings' ? 'flex' : 'none'; document.getElementById('main-fab').style.display = tabName === 'timeline' ? 'flex' : 'none'; document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById(`nav-mob-${tabName}`).classList.add('active'); };
         window.toggleTimerVisibility = (isOn) => { showTimer = isOn; localStorage.setItem('stShowTimer', isOn); document.getElementById('timer-bar-container').style.display = isOn ? 'flex' : 'none'; document.querySelectorAll('.show-timer-check').forEach(el => el.checked = isOn); };
@@ -491,23 +468,10 @@
 
         window.toggleCalendarSidebar = () => { const s = document.getElementById('calendar-sidebar'), b = document.getElementById('calendar-sidebar-backdrop'); if (s.classList.contains('open')) { s.classList.remove('open'); b.classList.add('opacity-0'); setTimeout(() => b.classList.add('hidden'), 300); } else { miniCalDate = new Date(currentDateObj); window.renderSidebarCalendar(); b.classList.remove('hidden'); void b.offsetWidth; b.classList.remove('opacity-0'); s.classList.add('open'); } };
         window.changeCalMonth = (delta) => { miniCalDate.setMonth(miniCalDate.getMonth() + delta); window.renderSidebarCalendar(); };
-        
-        window.renderSidebarCalendar = () => { 
-            const grid = document.getElementById('cal-sidebar-grid'), header = document.getElementById('cal-sidebar-month-year'), year = miniCalDate.getFullYear(), month = miniCalDate.getMonth(), monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; 
-            header.innerText = `${monthsStr[month]} ${year}`; 
-            const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), daysInPrevMonth = new Date(year, month, 0).getDate(), todayStr = getFormatDate(new Date()), selStr = getFormatDate(currentDateObj); 
-            let html = ''; 
-            for (let i = firstDay - 1; i >= 0; i--) { const d = daysInPrevMonth - i; html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate(${year}, ${month-1}, ${d}); window.toggleCalendarSidebar();">${d}</div>`; } 
-            for (let i = 1; i <= daysInMonth; i++) { const dStr = getFormatDate(new Date(year, month, i)), isSelected = dStr === selStr, isToday = dStr === todayStr; html += `<div class="cal-grid-item text-white/90 ${isSelected ? 'active' : ''} ${isToday&&!isSelected ? 'border border-white/30' : ''}" onclick="window.selectDate(${year}, ${month}, ${i}); window.toggleCalendarSidebar();">${i}</div>`; } 
-            const totalCells = firstDay + daysInMonth; let nextDays = 1; 
-            while (totalCells + nextDays - 1 < 42) { html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate(${year}, ${month+1}, ${nextDays}); window.toggleCalendarSidebar();">${nextDays}</div>`; nextDays++; } 
-            grid.innerHTML = html; 
-        };
+        window.renderSidebarCalendar = () => { const grid = document.getElementById('cal-sidebar-grid'), header = document.getElementById('cal-sidebar-month-year'), year = miniCalDate.getFullYear(), month = miniCalDate.getMonth(), monthsStr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]; header.innerText = `${monthsStr[month]} ${year}`; const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), daysInPrevMonth = new Date(year, month, 0).getDate(), todayStr = getFormatDate(new Date()), selStr = getFormatDate(currentDateObj); let html = ''; for (let i = firstDay - 1; i >= 0; i--) { const d = daysInPrevMonth - i; html += `<div class="cal-grid-item text-white/20" onclick="window.selectDate('${getFormatDate(new Date(year, month-1, d))}'); window.toggleCalendarSidebar();">${d}</div>`; } for (let i = 1; i <= daysInMonth; i++) { const dStr = getFormatDate(new Date(year, month, i)), isSelected = dStr === selStr, isToday = dStr === todayStr; html += `<div class="cal-grid-item text-white/90 ${isSelected ? 'active' : ''} ${isToday&&!isSelected ? 'border border-white/30' : ''}" onclick="window.selectDate('${dStr}'); window.toggleCalendarSidebar();">${i}</div>`; } grid.innerHTML = html; };
 
-        window.selectDate = (y, m, d) => { currentDateObj = new Date(y, m, d); window.renderCalendar(); window.renderTimeline(); };
-        window.changeDate = (days) => { currentDateObj.setDate(currentDateObj.getDate() + days); window.renderCalendar(); window.renderTimeline(); };
+        window.selectDate = (dateStr) => { currentDateObj = new Date(dateStr); window.renderCalendar(); window.renderTimeline(); };
         window.goToToday = () => { currentDateObj = new Date(); window.renderCalendar(); window.renderTimeline(); };
-        
         window.showAddModal = () => { const now = new Date(); let h = now.getHours(), m = Math.ceil(now.getMinutes() / 5) * 5; if(m === 60) { m = 0; h++; } document.getElementById('m-time').value = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; document.getElementById('m-end-time').value = `${String((h+1)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`; document.getElementById('m-title').value = ''; document.getElementById('m-memo').value = ''; selectedAddIcon = 'list-checks'; document.getElementById('m-icon-display').className = 'ph-bold ph-list-checks'; document.getElementById('add-modal').style.display = 'flex'; };
         window.hideAddModal = () => document.getElementById('add-modal').style.display = 'none';
         window.addTask = () => { const title = document.getElementById('m-title').value.trim(), timeStr = document.getElementById('m-time').value, endStr = document.getElementById('m-end-time').value; if(!title || !timeStr || !endStr) return; const [sh, sm] = timeStr.split(':'), [eh, em] = endStr.split(':'); const sMin = parseInt(sh)*60+parseInt(sm); let eMin = parseInt(eh)*60+parseInt(em); if (eMin < sMin) eMin += 1440; allTimelineData.push({ id: Date.now(), date: getFormatDate(currentDateObj), title, startMin: sMin, durationMins: eMin - sMin, iconName: selectedAddIcon, memo: document.getElementById('m-memo').value }); saveData(); window.hideAddModal(); };
@@ -519,8 +483,24 @@
         window.hideIconModal = () => document.getElementById('icon-modal').style.display = 'none';
         window.selectIcon = (iconName) => { if (currentIconTarget === 'add') { selectedAddIcon = iconName; document.getElementById('m-icon-display').className = `ph-bold ph-${iconName}`; } else { selectedEditIcon = iconName; document.getElementById('e-icon-display').className = `ph-bold ph-${iconName}`; } window.hideIconModal(); };
         
+        // 백업 기능 (데스크톱, 모바일 통합)
         window.exportData = () => { const b = new Blob([JSON.stringify({timeline: allTimelineData, inbox: inboxData, settings: {scale: PX_PER_MIN, gapRatio: GAP_RATIO, showTimer, useSmoothGradient}})], {type: "application/json"}); const u = URL.createObjectURL(b), l = document.createElement("a"); l.href = u; l.download = `structured_pro.json`; document.body.appendChild(l); l.click(); document.body.removeChild(l); };
-        window.clearAllData = () => { if(confirm("초기화하시겠습니까?")) { allTimelineData = []; inboxData = []; saveData(); saveInbox(); } };
+        window.importData = (e) => { 
+            const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+            reader.onload = (event) => { 
+                try { 
+                    const data = JSON.parse(event.target.result); 
+                    if (data.timeline) {
+                        allTimelineData = data.timeline; inboxData = data.inbox || [];
+                        if (data.settings) { PX_PER_MIN = data.settings.scale || 1.6; GAP_RATIO = data.settings.gapRatio || 0.5; showTimer = data.settings.showTimer !== false; useSmoothGradient = data.settings.useSmoothGradient !== false; }
+                        saveData(); saveInbox(); window.showToast("데이터 복원 성공!"); 
+                    }
+                } catch (err) { window.showToast("파일을 읽을 수 없습니다.", true); } 
+            }; 
+            reader.readAsText(file); e.target.value = '';
+        };
+
+        window.clearAllData = () => { if(confirm("모든 데이터를 삭제하시겠습니까?")) { allTimelineData = []; inboxData = []; saveData(); saveInbox(); window.showToast("초기화 완료"); } };
 
         function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(allTimelineData)); window.renderTimeline(); }
         function saveInbox() { localStorage.setItem(INBOX_KEY, JSON.stringify(inboxData)); window.renderInbox(); }
@@ -531,7 +511,7 @@
             titleEl.innerHTML = `${months[currentDateObj.getMonth()]} <span style="font-weight:400; color:var(--text-muted); margin-left:4px;">${currentDateObj.getFullYear()}</span> <i class="ph-bold ph-calendar-blank text-xl text-white/60 ml-2"></i>`;
             let startOfWeek = new Date(currentDateObj); startOfWeek.setDate(currentDateObj.getDate() - currentDateObj.getDay());
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], selStr = getFormatDate(currentDateObj);
-            let html = ''; for(let i=0; i<7; i++) { const d = new Date(startOfWeek); d.setDate(d.getDate() + i); const dStr = getFormatDate(d), isSelected = dStr === selStr; html += `<div class="day-item" onclick="window.selectDate(${d.getFullYear()}, ${d.getMonth()}, ${d.getDate()})"><div class="day-name" style="color: ${isSelected ? '#fff' : 'var(--text-muted)'}">${days[i]}</div><div class="day-num ${isSelected ? 'active' : ''}">${d.getDate()}</div></div>`; }
+            let html = ''; for(let i=0; i<7; i++) { const d = new Date(startOfWeek); d.setDate(d.getDate() + i); const dStr = getFormatDate(d), isSelected = dStr === selStr; html += `<div class="day-item" onclick="window.selectDate('${d.toISOString()}')"><div class="day-name" style="color: ${isSelected ? '#fff' : 'var(--text-muted)'}">${days[i]}</div><div class="day-num ${isSelected ? 'active' : ''}">${d.getDate()}</div></div>`; }
             barEl.innerHTML = html;
         };
 
@@ -581,8 +561,7 @@
                 const grad = useSmoothGradient ? 3 : 0;
                 const pillStyle = isO ? `background: linear-gradient(to bottom, #ffffff ${Math.max(0, timeP-grad)}%, #333336 ${Math.min(100, timeP+grad)}%);` : (isPast ? 'background:#fff;' : 'background:#333336;');
                 const lineStyle = isO ? `background: linear-gradient(to bottom, #ffffff ${Math.max(0, timeP-grad)}%, #333336 ${Math.min(100, timeP+grad)}%);` : (isPast ? 'background:#fff;' : 'background:#333336;');
-                let timeRangeText = `<p class="task-sub">${formatTime12(item.startMin)} - ${formatTime12(item.startMin + item.durationMins)} ${formatDurationStr(item.durationMins)}</p>`;
-                if (isO) timeRangeText = `<p class="task-sub" style="color:#fff; font-weight:700;">${formatDurationStr((item.startMin + item.durationMins)-nowMins).replace(/[()]/g, '')} 남음</p>`;
+                let timeRangeText = isO ? `<p class="task-sub" style="color:#fff; font-weight:700;">${formatDurationStr((item.startMin + item.durationMins)-nowMins).replace(/[()]/g, '')} 남음</p>` : `<p class="task-sub">${formatTime12(item.startMin)} - ${formatTime12(item.startMin + item.durationMins)} ${formatDurationStr(item.durationMins)}</p>`;
                 html += `<div class="timeline-item"><div class="time-label ${isO ? 'ongoing' : ''}"><span>${formatTime12(item.startMin)}</span>${item.durationMins > 0 && pillH > 80 ? `<span>${formatTime12(item.startMin + item.durationMins)}</span>` : ''}</div><div class="node-line"><div class="timeline-line-solid" style="${lineStyle} ${index === 0 ? 'top: 25px;' : 'top: -10px;'} ${index === data.length - 1 ? 'bottom: unset; height: ' + (pillH + 25) + 'px;' : 'bottom: -10px;'}"></div><div class="bubble" style="${pillStyle} height:${pillH}px;" onclick="window.openEditModal(${item.id})"><i class="ph-bold ph-${item.iconName || getIconForTitle(item.title)}" style="font-size: 24px; color: ${isPast||isO?'#000':'#fff'};"></i></div></div><div class="task-content" onclick="window.openEditModal(${item.id})">${timeRangeText}<p class="task-title" style="color: ${isPast||isO?'#fff':'var(--text-muted)'};">${item.title}</p>${parseMemo(item.memo)}</div></div>`;
             });
             container.innerHTML = html;
@@ -593,8 +572,13 @@
         document.addEventListener('DOMContentLoaded', () => { 
             try { const s = localStorage.getItem(STORAGE_KEY); if (s) allTimelineData = JSON.parse(s); else { const todayStr = getFormatDate(new Date()); allTimelineData = [{ id: 1, date: todayStr, title: '아침 루틴', startMin: 480, durationMins: 90, iconName: 'sun', memo: '- 물 마시기' }]; saveData(); } const si = localStorage.getItem(INBOX_KEY); if (si) inboxData = JSON.parse(si); } catch(e){}
             
+            // 데스크탑 설정 메뉴를 모바일에 복사하여 이벤트 리스너를 유지할 수 있도록 세팅
             document.getElementById('mob-settings-content').innerHTML = document.getElementById('drawer-settings').innerHTML;
             const mb = document.querySelector('#mob-settings-content .inbox-button'); if(mb) mb.remove();
+            
+            // 파일 입력 요소 (input type="file")의 onchange 이벤트가 복사 과정에서 날아갈 수 있어 명시적으로 추가
+            const mobileImportInput = document.querySelector('#mob-settings-content input[type="file"]');
+            if(mobileImportInput) mobileImportInput.onchange = window.importData;
 
             document.querySelectorAll('.show-timer-check').forEach(el => el.checked = showTimer); document.getElementById('timer-bar-container').style.display = showTimer ? 'flex' : 'none';
             document.querySelectorAll('.smooth-gradient-check').forEach(el => el.checked = useSmoothGradient);
