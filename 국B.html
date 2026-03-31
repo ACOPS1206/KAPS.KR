@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Export</title>
+
+  <style id="main-obsidian-styles">
+
+/* ===========================
+    Obsidian Theme Variables
+   =========================== */
+:root {
+  --background-primary: #1e1e1e;
+  --background-secondary: #2a2a2a;
+  --text-normal: #dcdcdc; 
+  --text-accent: #a882ff;
+  --text-muted: #888;
+  --interactive-accent: #a882ff;
+  --code-background: #242424;
+  --code-normal: #b3b3b3;
+  --code-comment: #666666;
+  --code-function: #e0de71;
+  --code-important: #e9973f;
+  --code-keyword: #fa99cd;
+  --code-operator: #fb464c;
+  --code-property: #53dfdd;
+  --code-punctuation: #b3b3b3;
+  --code-string: #44cf6e;
+  --code-tag: #fb464c;
+  --code-value: #a882ff;
+  --text-highlight-bg: #655300;
+}
+
+/*  Light Mode Variables */
+.light-mode {
+  --background-primary: #f6f6f6;
+  --background-secondary: #ffffff;
+  --text-normal: #1e1e1e;
+  --text-accent: #6c3aff;
+  --text-muted: #555;
+  --interactive-accent: #6c3aff;
+  --code-background: #f0f0f0;
+  --code-comment: #999;
+  --code-string: #118c4f;
+  --code-keyword: #7d4dd3;
+  --code-function: #c37e00;
+}
+
+/* ===========================
+    기본 레이아웃 (Layout Fixed)
+   =========================== */
+body {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+#editor {
+  width: 40%;
+  padding: 1em;
+  background-color: var(--background-secondary);
+  border-right: 2px solid var(--interactive-accent);
+  resize: none;
+  outline: none;
+  color: var(--text-normal);
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  height: 100%; /* (FIXED) 툴바 공간 확보 */
+  box-sizing: border-box;
+  padding-bottom: 50px;
+}
+
+/* (NEW) 오른쪽 패널 (미리보기 + HTML 뷰) */
+#right-panel {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-bottom: 50px; /* (FIXED) 툴바 공간 확보 */
+  box-sizing: border-box;
+}
+
+#preview {
+  height: 60%; /* 상단 60% */
+  padding: 2em;
+  overflow-y: auto;
+}
+
+/* (NEW) HTML 코드 실시간 뷰 */
+/* (NEW) HTML 코드 실시간 뷰 */
+#html-code-view {
+  height: 100%; /* (MODIFIED) 부모 div를 100% 채우도록 변경 */
+  box-sizing: border-box; /* (NEW) 패딩이 높이에 포함되도록 추가 */
+  background: var(--code-background);
+  color: var(--text-normal);
+  border-top: 2px solid var(--interactive-accent);
+  padding: 1em;
+  margin: 0;
+  overflow: auto;
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+  white-space: pre-wrap; /* 자동 줄바꿈 */
+  word-break: break-all;
+}
+
+/* ===========================
+    Markdown 스타일
+   =========================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-normal);
+}
+a {
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+code {
+  background-color: var(--code-background);
+  color: var(--code-string);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+pre {
+  margin: 0;
+}
+pre code {
+  display: block;
+  background-color: var(--code-background);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+blockquote {
+  border-left: 2px solid var(--interactive-accent);
+  padding-left: 1.5em;
+  margin: 0;
+  color: var(--text-normal);
+}
+blockquote p {
+  margin: 0;
+}
+blockquote p:empty {
+    margin: 0.5em 0;
+}
+#preview > blockquote {
+   margin: 1em 0;
+}
+
+/* ===========================
+    Toolbar GUI
+   =========================== */
+#toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--background-secondary);
+  border-top: 1px solid var(--interactive-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+#cssSnippet {
+  width: 45%;
+  background: #111;
+  color: var(--text-accent);
+  font-family: "Fira Code", monospace;
+  font-size: 12px;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  padding: 4px;
+  resize: vertical;
+}
+button {
+  background: var(--interactive-accent);
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background: #8a6eff;
+}
+
+/* ===========================
+    코드 하이라이팅
+   =========================== */
+.hljs-comment { color: var(--code-comment); }
+.hljs-keyword { color: var(--code-keyword); }
+.hljs-string { color: var(--code-string); }
+.hljs-number { color: var(--code-value); }
+
+/* ===========================
+    추가된 Markdown 스타일
+   =========================== */
+/* 수정된 mark 스타일 */
+mark {
+  background-color: var(--text-highlight-bg); /* 변수 사용 */
+  color: var(--text-normal); /* 글자색 변경 */
+  padding: 2px 4px;
+  border-radius: 0; /* 둥글기 제거 */
+}
+
+ul.task-list {
+  list-style-type: none;
+  padding-left: 0.5em;
+}
+
+li.task-list-item {
+  display: flex;
+  align-items: center;
+  margin: 0.2em 0;
+}
+
+li.task-list-item::before {
+  content: ' ';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-muted);
+  border-radius: 3px;
+  margin-right: 0.5em;
+  background-color: var(--background-secondary);
+  flex-shrink: 0;
+}
+
+li.task-list-item.checked::before {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+a.internal-link {
+  color: var(--text-accent);
+  background-color: #333333;
+  padding: 1px 3px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+#preview p {
+  margin: 0.5em 0;
+}
+#preview p:first-child {
+  margin-top: 0;
+}
+
+/* ===========================
+   코드 복사 버튼 스타일
+   =========================== */
+.code-block-wrapper {
+  position: relative;
+  margin: 1em 0;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #3a3a3a;
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code-block-wrapper:hover .copy-code-btn {
+  opacity: 1;
+}
+
+#html-code-view {
+  /* ... (other rules) ... */
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text; /* This line was added */
+}
+
+hr {
+  border: none; /* 기존 스타일 초기화 */
+  border-top: 2px solid #555555; /* 1px 두께와 특정 회색 적용 */
+  height: 0; 
+}
+
+
+  </style>
+
+  <style id="custom-snippet-styles">
+body { --background-primary: black; --interactive-accent: #895FE6;
+--text-highlight-bg: #655300}
+  </style>
+
+  <style>
+    /* 에디터의 flex 레이아웃 스타일('display: flex')이
+      결과물 파일에 영향을 주지 않도록 초기화(override)합니다.
+    */
+    body {
+      display: block; /* 'flex'에서 'block'으로 변경 */
+      flex-direction: unset;
+      height: auto;
+      overflow: auto;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div id="preview-wrapper" style="max-width: 800px; margin: 2em auto; padding: 2em;">
+<h3>청소년 우울증, 함께 소통하며 극복합시다</h3><p>20810 김재윤</p><blockquote><p>참고, 이 문서는 obsidian 기반 마크다운 문법으로 작성되었습니다.문서 열람 시 obsidian 사용을 권장 드립니다.하지만, 이 문서는 다른 마크다운 호환 문서 열람기와도 대부분의 호환되는 마크다운 문법을 가지고 있습니다.</p></blockquote><blockquote><p>참고, 이 본문에서 하이퍼링크로 링크 처리된 항목들은 모두 멀티미디어 항목을 포함하고 있으며, 발표 시 이미지 자료로 활용할 예정입니다.</p></blockquote><hr><h2>여러분, 혹시 최근 들어 이유 없이 무기력하거나 우울하다고 느껴본 적이 있으신가요?</h2><p>현재 대한민국 중학교 2학년 학생들의 우울증 통계 자료에 따르면, 전체 조사 인구의 27%가 우울증을 앓고 있다고 응답했습니다. 이 사진을 함께 봐 주시기 바랍니다. <a href="https://www.donga.com/news/Society/article/all/20240306/123830660/1" target="_blank">통계 사진</a></p><p>27%라는 수치가 작아 보일 수 있지만, 이는 학생 10명 중 무려 3명 가까이 우울증으로 힘들어하고 있다는 뜻입니다. 특히 청소년기는 감정 기복이 심한 사춘기와 맞물려 있어 우울증이 피로, 수면 장애, 식욕 변화, 신체적 통증등을 유발하게 될 수도 있으며, 우리의 학업과 직접적인 관련이 있는 문제인 집중력/기억력 저하, 판단력 저하등의 문제를 초례하게 될 수도 있습니다.</p><p>또한 이 외의 더욱 심각한 문제를 초래할 수 있으며, 자칫 <mark>극단적인 선택</mark>으로 이어질 위험도 큽니다.</p><p>그래서 정부는 한강 대교에서 가장 자살률이 높았던 다리중 하나인 마포대교에 이러한 (<a href="http://m.bokjinews.com/news/articleView.html?idxno=98931" target="_blank">명언 사진</a>을 가르키며) 명언들을 설치하기도 했습니다만, 이러한 문구들이 보시는 것과 같이 오히려 논란을 일으키며 사라지기도 했습니다. (<a href="https://normalmedia.co.kr/mobile/article.html?no=23457" target="_blank">논란의 문구 기사 사진1</a> <a href="https://imnews.imbc.com/replay/2019/nwtoday/article/5504682_28983.html" target="_blank">기사 영상 썸네일</a> 을 가리키며)</p><p>현재는 기술적인 대안으로 이 사진에서 보시는 것과 같이 <a href="https://m.blog.naver.com/PostView.naver?blogId=deans14&logNo=222477451368&proxyReferer=https:%2F%2Fwww.google.com%2F&trackingCode=ext" target="_blank">인공지능 CCTV</a>와 <a href="https://biz.chosun.com/topics/topics_social/2021/08/04/Z4HL5GE5UBGMBBWXCUSBAYTUYY/" target="_blank">높은 펜스</a>를 설치하여 소중한 생명을 지키기 위해 노력하고 있는 모습을 확인할 수 있습니다.</p><p>하지만 여전히 대한민국의 자살률은 감소하지 않고 있는 추세입니다.</p><p>그만큼 자살은 우울증을 앓는 청소년들이 접하게 될 수 있는 문제들 중, 가장 심각한 문제이기도 합니다.</p><p>다들 많이 들으셨겠지만, 우리나라는 OECD 회원국들 중 자살률이 무려 1위에 육박하는 국가입니다.</p><p>그리고 대부분의 청소년들의 자살 이유는 성적 등의 이유 다음으로 우울증이 2위를 차지하고 있습니다.</p><hr><h2>그렇다면 우리는 어떻게 이 우울증을 해결할 수 있을까요? </h2><p>제가 제안하는 해결 방안은 바로 '주변 사람들과의 접촉과 소통을 늘리는 것'입니다.</p><p>동아리에 가입하거나, 또래 상담을 받는 것 또한 좋은 우울증 해결 방법이 되어줄 수 있습니다.</p><p>처음이 어렵지 시작이 반입니다. 확실한 것은 또래 상담은 우울증 일부, 또는 완전히 해결해 줄 수 있다는 것입니다.</p><p>역사 시간에 선생님이 말씀하셨듯이, 인류는 본능적으로 무리에서 고립될 때 생명의 위협을 느끼도록 진화해 왔습니다. 우울증을 겪을 때 스스로를 고립시키는 것은 증상을 더욱 심화시킬 뿐입니다. 비록 마음이 무겁더라도 의도적으로, 의도적이지 않더라도 친구나 가족과 대화하고 접촉하는 시간을 늘려야 합니다.  그리고 주변에 이와 같은 친구들이 없는지 관심을 기울일 필요도 있습니다.</p><p>학업 때문에 혹은 여건이 되지 않는다고 생각하시는 분들도 계실 것입니다. 하지만 여러분의 성적이 여러분의 정신 건강보다 중요할 수는 없습니다. 우울증은 기력을 앗아가고 부정적인 생각으로 여러분을 괴롭히게 됩니다. 하루 정도는 학업의 굴레에서 벗어나 자신을 돌보고, 주변 사람들과 만나는 시간을 갖는다면 우울증 치료에 매우 호전적인 영향을 끼칠 것입니다.</p><hr><h2>우울증은 개인이 해결할 수 있는 문제가 아닙니다. 서로가 서로를 도와가며 우울증을 해결해야 합니다.</h2><p>앞서 말씀드린 해결 방안을 실천하여 주변 사람들과 소통하며 마음을 나누는 노력을 기울인다면, 부정적인 생각의 고리를 끊고 다시 활기찬 일상을 되찾는 결말을 보게 되실 수 있을 것입니다.</p>
+  </div>
+  </body>
+</html>
