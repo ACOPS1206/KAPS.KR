@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Export</title>
+
+  <style id="main-obsidian-styles">
+
+/* ===========================
+    Obsidian Theme Variables
+   =========================== */
+:root {
+  --background-primary: #1e1e1e;
+  --background-secondary: #2a2a2a;
+  --text-normal: #dcdcdc; 
+  --text-accent: #a882ff;
+  --text-muted: #888;
+  --interactive-accent: #a882ff;
+  --code-background: #242424;
+  --code-normal: #b3b3b3;
+  --code-comment: #666666;
+  --code-function: #e0de71;
+  --code-important: #e9973f;
+  --code-keyword: #fa99cd;
+  --code-operator: #fb464c;
+  --code-property: #53dfdd;
+  --code-punctuation: #b3b3b3;
+  --code-string: #44cf6e;
+  --code-tag: #fb464c;
+  --code-value: #a882ff;
+  --text-highlight-bg: #655300;
+}
+
+/*  Light Mode Variables */
+.light-mode {
+  --background-primary: #f6f6f6;
+  --background-secondary: #ffffff;
+  --text-normal: #1e1e1e;
+  --text-accent: #6c3aff;
+  --text-muted: #555;
+  --interactive-accent: #6c3aff;
+  --code-background: #f0f0f0;
+  --code-comment: #999;
+  --code-string: #118c4f;
+  --code-keyword: #7d4dd3;
+  --code-function: #c37e00;
+}
+
+/* ===========================
+    기본 레이아웃 (Layout Fixed)
+   =========================== */
+body {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+#editor {
+  width: 40%;
+  padding: 1em;
+  background-color: var(--background-secondary);
+  border-right: 2px solid var(--interactive-accent);
+  resize: none;
+  outline: none;
+  color: var(--text-normal);
+  font-family: "Fira Code", monospace;
+  font-size: 14px;
+  height: 100%; /* (FIXED) 툴바 공간 확보 */
+  box-sizing: border-box;
+  padding-bottom: 50px;
+}
+
+/* (NEW) 오른쪽 패널 (미리보기 + HTML 뷰) */
+#right-panel {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding-bottom: 50px; /* (FIXED) 툴바 공간 확보 */
+  box-sizing: border-box;
+}
+
+#preview {
+  height: 60%; /* 상단 60% */
+  padding: 2em;
+  overflow-y: auto;
+}
+
+/* (NEW) HTML 코드 실시간 뷰 */
+/* (NEW) HTML 코드 실시간 뷰 */
+#html-code-view {
+  height: 100%; /* (MODIFIED) 부모 div를 100% 채우도록 변경 */
+  box-sizing: border-box; /* (NEW) 패딩이 높이에 포함되도록 추가 */
+  background: var(--code-background);
+  color: var(--text-normal);
+  border-top: 2px solid var(--interactive-accent);
+  padding: 1em;
+  margin: 0;
+  overflow: auto;
+  font-family: "Fira Code", monospace;
+  font-size: 13px;
+  white-space: pre-wrap; /* 자동 줄바꿈 */
+  word-break: break-all;
+}
+
+/* ===========================
+    Markdown 스타일
+   =========================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-normal);
+}
+a {
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+code {
+  background-color: var(--code-background);
+  color: var(--code-string);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+pre {
+  margin: 0;
+}
+pre code {
+  display: block;
+  background-color: var(--code-background);
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+blockquote {
+  border-left: 2px solid var(--interactive-accent);
+  padding-left: 1.5em;
+  margin: 0;
+  color: var(--text-normal);
+}
+blockquote p {
+  margin: 0;
+}
+blockquote p:empty {
+    margin: 0.5em 0;
+}
+#preview > blockquote {
+   margin: 1em 0;
+}
+
+/* ===========================
+    Toolbar GUI
+   =========================== */
+#toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--background-secondary);
+  border-top: 1px solid var(--interactive-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+#cssSnippet {
+  width: 45%;
+  background: #111;
+  color: var(--text-accent);
+  font-family: "Fira Code", monospace;
+  font-size: 12px;
+  border: 1px solid var(--interactive-accent);
+  border-radius: 4px;
+  padding: 4px;
+  resize: vertical;
+}
+button {
+  background: var(--interactive-accent);
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background: #8a6eff;
+}
+
+/* ===========================
+    코드 하이라이팅
+   =========================== */
+.hljs-comment { color: var(--code-comment); }
+.hljs-keyword { color: var(--code-keyword); }
+.hljs-string { color: var(--code-string); }
+.hljs-number { color: var(--code-value); }
+
+/* ===========================
+    추가된 Markdown 스타일
+   =========================== */
+/* 수정된 mark 스타일 */
+mark {
+  background-color: var(--text-highlight-bg); /* 변수 사용 */
+  color: var(--text-normal); /* 글자색 변경 */
+  padding: 2px 4px;
+  border-radius: 0; /* 둥글기 제거 */
+}
+
+ul.task-list {
+  list-style-type: none;
+  padding-left: 0.5em;
+}
+
+li.task-list-item {
+  display: flex;
+  align-items: center;
+  margin: 0.2em 0;
+}
+
+li.task-list-item::before {
+  content: ' ';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--text-muted);
+  border-radius: 3px;
+  margin-right: 0.5em;
+  background-color: var(--background-secondary);
+  flex-shrink: 0;
+}
+
+li.task-list-item.checked::before {
+  background-color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' viewBox='0 0 16 16' fill='white'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+a.internal-link {
+  color: var(--text-accent);
+  background-color: #333333;
+  padding: 1px 3px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+#preview p {
+  margin: 0.5em 0;
+}
+#preview p:first-child {
+  margin-top: 0;
+}
+
+/* ===========================
+   코드 복사 버튼 스타일
+   =========================== */
+.code-block-wrapper {
+  position: relative;
+  margin: 1em 0;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: #3a3a3a;
+  color: var(--text-muted);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  padding: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.code-block-wrapper:hover .copy-code-btn {
+  opacity: 1;
+}
+
+#html-code-view {
+  /* ... (other rules) ... */
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text; /* This line was added */
+}
+
+hr {
+  border: none; /* 기존 스타일 초기화 */
+  border-top: 2px solid #555555; /* 1px 두께와 특정 회색 적용 */
+  height: 0; 
+}
+
+
+  </style>
+
+  <style id="custom-snippet-styles">
+body { --background-primary: black; --interactive-accent: #895FE6;
+--text-highlight-bg: #655300}
+  </style>
+
+  <style>
+    /* 에디터의 flex 레이아웃 스타일('display: flex')이
+      결과물 파일에 영향을 주지 않도록 초기화(override)합니다.
+    */
+    body {
+      display: block; /* 'flex'에서 'block'으로 변경 */
+      flex-direction: unset;
+      height: auto;
+      overflow: auto;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div id="preview-wrapper" style="max-width: 800px; margin: 2em auto; padding: 2em;">
+<h1>VLC</h1><hr><h2>VLC 란?</h2><blockquote><p>VLC는 DVD, 오디오 CD, VCD 와 다양한 스트리밍 프로토콜뿐 아니라 대부분의 멀티미디어 파일을 재생할 수 있는 자유 오픈 소스 크로스 플랫폼 멀티미디어 재생기이자 프레임워크입니다.</p></blockquote><p>VLC 미디어 플레이어는 오픈 소스이며, 새계에서 가장 많은 비디오/오디오 포멧을 지원하는 미디어 플레이어 입니다.</p><p>또한, 오픈소스 이기 때문에 바이러스 감염의 걱정과 광고 걱정이 없으며</p><p>대한민국 타사의 미디어 플레이어들과 다르게 쓸데없는 부가기능(라이브 등)이 없어서 용량을 많이 차지하지 않습니다.</p><p>참고로 현제 대한민국의 미디어 플레이어들(곰/팟플레이어)은 VLC 미디어 플레이어의 로컬라이징 된 복제판 입니다.</p><hr><h2>VLC 설치하기</h2><p>VLC는 <a href="https://www.videolan.org" target="_blank">이 링크</a>에서 받으실 수 있습니다</p><p>또는 <a href="https://get.videolan.org/vlc/3.0.23/win64/vlc-3.0.23-win64.exe" target="_blank">이 링크</a>에서 바로 윈도우 버전 VLC를 다운로드 하실 수 있습니다 (<b>권장</b>)</p><hr><h2>기타</h2><p>VLC는 전자칠판에도 설지 가능합니다. <a href="https://get.videolan.org/vlc-android/3.7.0/" target="_blank">이곳</a>에서 각 반의 전자칠판에 맞는 APK 파일을 다운로드 해 설치를 진행하실 수 있습니다</p><p><a href="https://www.videolan.org/vlc/#download" target="_blank">공식 웹사이트의 다운로드들</a>에서 다른  여러가지 운영체제들을 위한 VLC를 다운로드 하실 수 있습니다</p><p>공식 GitHub 리포지토리는 <a href="https://github.com/videolan/vlc" target="_blank">이곳</a>에서 확인하실 수 있습니다</p>
+  </div>
+  </body>
+</html>
