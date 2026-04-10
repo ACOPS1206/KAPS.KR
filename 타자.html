@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>한글 미니멀 타자</title>
+    <style>
+        :root {
+            --bg-color: #0d0d0d;
+            --text-muted: #333333;
+            --text-main: #f0f0f0;
+            --accent: #bb86fc;
+            --error: #cf6679;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            text-align: left;
+        }
+
+        /* 문장 표시 영역 */
+        #quote-display {
+            font-size: 2rem;
+            line-height: 1.8;
+            margin-bottom: 50px;
+            min-height: 120px;
+            word-break: keep-all;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .char {
+            transition: color 0.2s ease, transform 0.2s ease;
+            display: inline-block;
+            color: var(--text-muted);
+            white-space: pre; /* 공백 유지 */
+        }
+
+        .char.correct { color: var(--text-main); }
+        .char.incorrect { 
+            color: var(--error); 
+            transform: translateY(-2px);
+            text-shadow: 0 0 8px rgba(207, 102, 121, 0.5);
+        }
+        
+        .char.current {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        #input-field {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 하단 대시보드 */
+        .dashboard {
+            display: flex;
+            gap: 60px;
+            margin-top: 20px;
+            padding: 20px 0;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #555;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: var(--accent);
+            font-family: 'Courier New', monospace;
+        }
+
+        /* 전환 애니메이션 */
+        .hidden { opacity: 0; transform: translateY(10px); }
+    </style>
+</head>
+<body onclick="document.getElementById('input-field').focus()">
+
+<div class="container">
+    <div id="quote-display"></div>
+    <input type="text" id="input-field" autofocus autocomplete="off">
+    
+    <div class="dashboard">
+        <div class="stat-group">
+            <span class="stat-label">WPM</span>
+            <span class="stat-value" id="wpm">0</span>
+        </div>
+        <div class="stat-group">
+            <span class="stat-label">정확도</span>
+            <span class="stat-value" id="accuracy">0%</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const quotes = [
+        "별을 노래하는 마음으로 모든 죽어가는 것을 사랑해야지.",
+        "가장 찬란한 순간은 아직 오지 않았다.",
+        "우리는 우리가 반복적으로 하는 행동의 결과이다.",
+        "천천히 가는 것을 두려워 말고, 멈춰 서는 것을 두려워하라.",
+        "작은 기회가 때로는 위대한 업적의 시작이다.",
+        "시작이 반이다라는 말은 시작만 해도 절반은 성공이라는 뜻이다.",
+        "실패는 다시 시작할 수 있는 기회일 뿐이다.",
+        "나의 사전에 불가능이란 단어는 없다."
+    ];
+
+    const display = document.getElementById('quote-display');
+    const input = document.getElementById('input-field');
+    const wpmElement = document.getElementById('wpm');
+    const accElement = document.getElementById('accuracy');
+
+    let startTime = null;
+    let errors = 0;
+
+    function renderQuote() {
+        display.classList.add('hidden');
+        
+        setTimeout(() => {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            const quote = quotes[randomIndex];
+            display.innerHTML = '';
+            
+            quote.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.classList.add('char');
+                display.appendChild(span);
+            });
+
+            display.classList.remove('hidden');
+            input.value = '';
+            input.maxLength = quote.length;
+            updateCursor(0);
+        }, 500);
+    }
+
+    function updateCursor(index) {
+        const spans = display.querySelectorAll('.char');
+        spans.forEach(s => s.classList.remove('current'));
+        if (spans[index]) spans[index].classList.add('current');
+    }
+
+    input.addEventListener('input', () => {
+        const spans = display.querySelectorAll('.char');
+        const inputChars = input.value.split('');
+        
+        if (!startTime && input.value.length > 0) startTime = new Date();
+
+        errors = 0;
+        spans.forEach((span, index) => {
+            const char = inputChars[index];
+            if (char == null) {
+                span.classList.remove('correct', 'incorrect');
+            } else if (char === span.innerText) {
+                span.classList.add('correct');
+                span.classList.remove('incorrect');
+            } else {
+                span.classList.add('incorrect');
+                errors++;
+            }
+        });
+
+        updateCursor(input.value.length);
+
+        // 통계 (WPM: 단어 기준 / Accuracy: 오타 감점)
+        if (input.value.length > 0) {
+            const timeSeconds = (new Date() - startTime) / 1000;
+            const timeMinutes = timeSeconds / 60;
+            
+            // 한글 WPM은 보통 5타를 한 단어로 계산 (공백 포함)
+            const wpm = Math.round((input.value.length / 5) / timeMinutes);
+            const accuracy = Math.round(((input.value.length - errors) / input.value.length) * 100);
+
+            wpmElement.innerText = wpm > 0 && isFinite(wpm) ? wpm : 0;
+            accElement.innerText = accuracy + '%';
+        }
+
+        // 문장 완료
+        if (input.value.length === spans.length) {
+            startTime = null;
+            setTimeout(renderQuote, 800);
+        }
+    });
+
+    renderQuote();
+</script>
+
+</body>
+</html>
