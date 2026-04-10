@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Typing - Classic Motion</title>
+    <title>Minimalist Typing - Classic Motion Refined</title>
     <style>
         :root {
             --bg: #000000;
@@ -81,6 +81,7 @@
 
         .char {
             color: var(--text-off);
+            /* 클래식 버전의 탄성 애니메이션 복구 */
             transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             position: relative;
             white-space: pre;
@@ -90,7 +91,7 @@
         .char.correct { color: var(--text-on); }
         .char.incorrect { 
             color: var(--error); 
-            transform: translateY(-8px); /* 이전의 위로 올라가는 효과 */
+            transform: translateY(-4px); /* 요청하신 대로 높이 하향 조정 (-8 -> -4) */
             text-shadow: 0 5px 15px rgba(255, 85, 85, 0.3);
             animation: shake 0.2s ease-in-out;
         }
@@ -103,7 +104,7 @@
 
         .char.current { 
             color: var(--accent);
-            transform: translateY(-4px); /* 입력 중인 글자도 살짝 들림 */
+            transform: translateY(-2px); /* 요청하신 대로 높이 하향 조정 (-4 -> -2) */
         }
         
         .char.current::after {
@@ -182,7 +183,7 @@
 
         .modal-content {
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -191,14 +192,15 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        .modal-section { margin-bottom: 40px; }
-        .modal h2 { font-weight: 200; margin-bottom: 20px; letter-spacing: 4px; color: var(--text-off); text-align: center; font-size: 1.2rem;}
+        .modal-section { margin-bottom: 30px; border-bottom: 1px solid #111; padding-bottom: 20px; }
+        .modal-section:last-of-type { border-bottom: none; }
+        .modal h2 { font-weight: 200; margin-bottom: 15px; letter-spacing: 4px; color: var(--text-off); text-align: center; font-size: 1rem;}
         
         .theme-selector {
             display: flex;
             justify-content: center;
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .theme-dot {
@@ -212,6 +214,21 @@
         .theme-dot:hover { transform: scale(1.3); }
         .theme-dot.active { border: 2px solid #fff; transform: scale(1.2); }
 
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .mode-btn {
+            font-size: 0.7rem;
+            color: var(--text-off);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+        .mode-btn.active { color: var(--accent); font-weight: bold; }
+
         .modal input {
             width: 100%;
             background: transparent;
@@ -220,25 +237,24 @@
             color: var(--text-on);
             font-size: 1.1rem;
             padding: 15px 0;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-family: var(--font-main);
             text-align: center;
         }
         .modal input:focus { border-color: var(--accent); }
 
-        .custom-list { max-height: 180px; overflow-y: auto; margin-bottom: 20px; scrollbar-width: none; }
+        .custom-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; scrollbar-width: none; }
         .custom-list::-webkit-scrollbar { display: none; }
         .custom-item {
-            padding: 12px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #111;
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #444;
         }
         .delete-btn { color: var(--error); cursor: pointer; opacity: 0.5; font-size: 0.7rem; }
-        
-        .hidden { opacity: 0; }
+        .delete-btn:hover { opacity: 1; }
 
         #msg-box {
             position: fixed;
@@ -297,11 +313,19 @@
         <div class="modal-section">
             <h2>THEME</h2>
             <div class="theme-selector">
-                <div class="theme-dot active" style="background: #a29bfe;" onclick="setTheme('#a29bfe', this)" title="Soft Purple"></div>
-                <div class="theme-dot" style="background: #55efc4;" onclick="setTheme('#55efc4', this)" title="Mint"></div>
-                <div class="theme-dot" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a', this)" title="Pastel Red"></div>
-                <div class="theme-dot" style="background: #81ecec;" onclick="setTheme('#81ecec', this)" title="Cyan"></div>
-                <div class="theme-dot" style="background: #feca57;" onclick="setTheme('#feca57', this)" title="Warm Yellow"></div>
+                <div class="theme-dot active" style="background: #a29bfe;" onclick="setTheme('#a29bfe', this)"></div>
+                <div class="theme-dot" style="background: #55efc4;" onclick="setTheme('#55efc4', this)"></div>
+                <div class="theme-dot" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a', this)"></div>
+                <div class="theme-dot" style="background: #81ecec;" onclick="setTheme('#81ecec', this)"></div>
+                <div class="theme-dot" style="background: #feca57;" onclick="setTheme('#feca57', this)"></div>
+            </div>
+        </div>
+
+        <div class="modal-section">
+            <h2>PRACTICE MODE</h2>
+            <div class="mode-toggle">
+                <span id="mode-all" class="mode-btn active" onclick="setPracticeMode('all')">ALL QUOTES</span>
+                <span id="mode-custom" class="mode-btn" onclick="setPracticeMode('custom')">CUSTOM ONLY</span>
             </div>
         </div>
 
@@ -311,24 +335,15 @@
             <div class="custom-list" id="custom-list"></div>
         </div>
         
-        <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px;" onclick="toggleModal(false)">CLOSE</button>
+        <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px; font-weight: 700;" onclick="toggleModal(false)">CLOSE</button>
     </div>
 </div>
 
 <div id="msg-box"></div>
 
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-    import { getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, addDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
-
-    const firebaseConfig = JSON.parse(__firebase_config);
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'minimal-classic-master';
-
-    const quotesKR = [
+<script>
+    // Constants
+    const DEFAULT_QUOTES_KR = [
         "별을 노래하는 마음으로 모든 죽어가는 것을 사랑해야지.",
         "가장 찬란한 순간은 아직 오지 않았다.",
         "우리는 우리가 반복적으로 하는 행동의 결과이다.",
@@ -350,7 +365,7 @@
         "지금 이 순간이 당신의 가장 젊은 날이다."
     ];
 
-    const quotesEN = [
+    const DEFAULT_QUOTES_EN = [
         "Simplicity is the ultimate sophistication.",
         "Stay hungry, stay foolish.",
         "The best way to predict the future is to create it.",
@@ -371,54 +386,87 @@
         "The power of imagination makes us infinite."
     ];
 
-    let user = null;
+    // State
     let currentLang = 'kr';
-    let customQuotes = [];
+    let practiceMode = 'all'; 
+    let customQuotes = JSON.parse(localStorage.getItem('typing_custom_quotes') || '[]');
     let currentQuoteText = "";
     let startTime = null;
     let errors = 0;
     let isModalOpen = false;
 
-    const initAuth = async () => {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
-        }
-    };
-
-    onAuthStateChanged(auth, (userData) => {
-        user = userData;
-        if (user) subscribeData();
-    });
-
-    const subscribeData = () => {
-        const q = collection(db, 'artifacts', appId, 'users', user.uid, 'quotes');
-        onSnapshot(q, (snapshot) => {
-            customQuotes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderCustomList();
-            if (!currentQuoteText) renderQuote();
-        }, (err) => console.error(err));
-    };
-
+    // Elements
     const display = document.getElementById('quote-display');
     const input = document.getElementById('input-field');
     const wpmEl = document.getElementById('wpm');
     const accEl = document.getElementById('acc');
+    const customListEl = document.getElementById('custom-list');
+
+    // Global Functions
+    window.setLanguage = (lang) => {
+        currentLang = lang;
+        document.getElementById('btn-kr').classList.toggle('active', lang === 'kr');
+        document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+        document.getElementById('unit-label').innerText = lang === 'kr' ? 'CPM' : 'WPM';
+        resetQuote();
+    };
+
+    window.setTheme = (color, el) => {
+        document.documentElement.style.setProperty('--accent', color);
+        document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
+        el.classList.add('active');
+        showMessage(`Theme Updated`);
+    };
+
+    window.setPracticeMode = (mode) => {
+        practiceMode = mode;
+        document.getElementById('mode-all').classList.toggle('active', mode === 'all');
+        document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
+        resetQuote();
+    };
+
+    window.toggleModal = (show) => {
+        isModalOpen = show;
+        document.getElementById('modal').style.display = show ? 'flex' : 'none';
+        if (!show) {
+            input.focus();
+        } else {
+            renderCustomList();
+        }
+    };
+
+    window.resetQuote = () => {
+        wpmEl.innerText = '0';
+        accEl.innerText = '0';
+        renderQuote();
+    };
 
     function renderQuote() {
         display.style.opacity = 0;
         
         setTimeout(() => {
             const filteredCustom = customQuotes.filter(q => q.lang === currentLang).map(q => q.text);
-            const pool = [...(currentLang === 'kr' ? quotesKR : quotesEN), ...filteredCustom];
+            let pool = [];
+
+            if (practiceMode === 'custom') {
+                pool = filteredCustom;
+                if (pool.length === 0) {
+                    display.innerHTML = `<span style="color:var(--accent); font-size:1.2rem;">문장이 없습니다.</span>`;
+                    display.style.opacity = 1;
+                    return;
+                }
+            } else {
+                pool = [...(currentLang === 'kr' ? DEFAULT_QUOTES_KR : DEFAULT_QUOTES_EN), ...filteredCustom];
+            }
             
             let nextQuote = pool[Math.floor(Math.random() * pool.length)];
-            while(nextQuote === currentQuoteText && pool.length > 1) {
-                nextQuote = pool[Math.floor(Math.random() * pool.length)];
+            if (pool.length > 1) {
+                while(nextQuote === currentQuoteText) {
+                    nextQuote = pool[Math.floor(Math.random() * pool.length)];
+                }
             }
-            currentQuoteText = nextQuote;
             
+            currentQuoteText = nextQuote;
             display.innerHTML = '';
             currentQuoteText.split('').forEach(char => {
                 const span = document.createElement('span');
@@ -428,7 +476,6 @@
             });
 
             display.style.opacity = 1;
-            
             input.value = '';
             input.maxLength = currentQuoteText.length;
             startTime = null;
@@ -444,7 +491,7 @@
     }
 
     input.addEventListener('input', () => {
-        if (isModalOpen) return;
+        if (isModalOpen || !currentQuoteText) return;
         const spans = display.querySelectorAll('.char');
         const chars = input.value.split('');
         if (!startTime && input.value.length > 0) startTime = new Date();
@@ -453,16 +500,19 @@
         spans.forEach((span, i) => {
             const c = chars[i];
             if (c == null) span.className = 'char';
-            else if (c === span.innerText) span.className = 'char correct';
-            else { 
-                span.className = 'char incorrect';
+            else if (c === span.innerText) {
+                span.className = 'char correct';
+            } else { 
+                if (!span.classList.contains('incorrect')) {
+                    span.className = 'char incorrect';
+                }
                 errors++; 
             }
         });
 
         updateCursor(input.value.length);
 
-        if (input.value.length > 0) {
+        if (input.value.length > 0 && startTime) {
             const sec = (new Date() - startTime) / 1000;
             const val = currentLang === 'en' 
                 ? Math.round((input.value.length / 5) / (sec / 60)) 
@@ -477,63 +527,34 @@
         }
     });
 
-    window.setTheme = (color, el) => {
-        document.documentElement.style.setProperty('--accent', color);
-        document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
-        el.classList.add('active');
-        showMessage(`Theme Updated`);
-    };
-
-    window.setLanguage = (lang) => {
-        currentLang = lang;
-        document.getElementById('btn-kr').className = lang === 'kr' ? 'active' : '';
-        document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-        document.getElementById('unit-label').innerText = lang === 'kr' ? 'CPM' : 'WPM';
-        resetQuote();
-    };
-
-    window.resetQuote = () => {
-        wpmEl.innerText = '0';
-        accEl.innerText = '0';
-        renderQuote();
-    };
-
-    window.toggleModal = (show) => {
-        isModalOpen = show;
-        document.getElementById('modal').style.display = show ? 'flex' : 'none';
-        if (!show) input.focus();
-    };
-
-    document.getElementById('custom-input').addEventListener('keypress', async (e) => {
+    document.getElementById('custom-input').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
-            const val = e.target.value.trim();
-            if (!val || !user) return;
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'quotes'), {
-                    text: val,
-                    lang: currentLang,
-                    createdAt: new Date()
-                });
-                e.target.value = '';
-                showMessage('Quote Added');
-            } catch (err) { console.error(err); }
+            const text = e.target.value.trim();
+            if (!text) return;
+            const newQuote = { id: Date.now().toString(), text: text, lang: currentLang };
+            customQuotes.push(newQuote);
+            localStorage.setItem('typing_custom_quotes', JSON.stringify(customQuotes));
+            e.target.value = '';
+            renderCustomList();
+            showMessage('Added');
         }
     });
 
-    window.deleteQuote = async (id) => {
-        await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'quotes', id));
+    window.deleteQuote = (id) => {
+        customQuotes = customQuotes.filter(q => q.id !== id);
+        localStorage.setItem('typing_custom_quotes', JSON.stringify(customQuotes));
+        renderCustomList();
     };
 
     function renderCustomList() {
-        const list = document.getElementById('custom-list');
         const filtered = customQuotes.filter(q => q.lang === currentLang);
         if (filtered.length === 0) {
-            list.innerHTML = '<div style="color:#111; font-size:0.7rem; text-align:center; padding: 20px 0;">No custom quotes yet.</div>';
+            customListEl.innerHTML = '<div style="color:#222; font-size:0.7rem; text-align:center; padding: 20px 0;">Empty.</div>';
             return;
         }
-        list.innerHTML = filtered.map(q => `
+        customListEl.innerHTML = filtered.map(q => `
             <div class="custom-item">
-                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 85%;">${q.text}</span>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;">${q.text}</span>
                 <span class="delete-btn" onclick="deleteQuote('${q.id}')">Delete</span>
             </div>
         `).join('');
@@ -546,8 +567,10 @@
         setTimeout(() => b.style.opacity = 0, 1500);
     }
 
-    initAuth();
-    renderQuote();
+    window.onload = () => {
+        renderQuote();
+        input.focus();
+    };
 </script>
 
 </body>
