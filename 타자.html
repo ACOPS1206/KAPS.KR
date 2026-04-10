@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Typing - Classic Motion Refined</title>
+    <title>Minimalist Typing - Session Summary</title>
     <style>
         :root {
             --bg: #000000;
@@ -81,7 +81,6 @@
 
         .char {
             color: var(--text-off);
-            /* 클래식 버전의 탄성 애니메이션 복구 */
             transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
             position: relative;
             white-space: pre;
@@ -91,7 +90,7 @@
         .char.correct { color: var(--text-on); }
         .char.incorrect { 
             color: var(--error); 
-            transform: translateY(-4px); /* 요청하신 대로 높이 하향 조정 (-8 -> -4) */
+            transform: translateY(-4px); 
             text-shadow: 0 5px 15px rgba(255, 85, 85, 0.3);
             animation: shake 0.2s ease-in-out;
         }
@@ -104,7 +103,7 @@
 
         .char.current { 
             color: var(--accent);
-            transform: translateY(-2px); /* 요청하신 대로 높이 하향 조정 (-4 -> -2) */
+            transform: translateY(-2px); 
         }
         
         .char.current::after {
@@ -164,8 +163,10 @@
             text-transform: uppercase;
         }
         .btn:hover { color: var(--accent); }
+        .btn-finish { color: var(--accent); border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; }
+        .btn-finish:hover { background: var(--accent); color: #000; }
 
-        /* Modal / Settings */
+        /* Modal / Settings / Results */
         .modal {
             position: fixed;
             top: 0;
@@ -256,6 +257,30 @@
         .delete-btn { color: var(--error); cursor: pointer; opacity: 0.5; font-size: 0.7rem; }
         .delete-btn:hover { opacity: 1; }
 
+        /* Results Display */
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .result-item { display: flex; flex-direction: column; gap: 5px; }
+        .result-label { font-size: 0.6rem; color: var(--text-off); letter-spacing: 1px; }
+        .result-value { font-size: 1.8rem; color: var(--accent); font-family: 'Courier New', monospace; }
+
+        .session-list {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            color: #666;
+            padding: 10px;
+            background: #050505;
+            border-radius: 4px;
+        }
+        .session-item { margin-bottom: 8px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+        .session-item:last-child { border-bottom: none; }
+
         #msg-box {
             position: fixed;
             top: 40px;
@@ -302,13 +327,15 @@
         </div>
 
         <div class="btns">
-            <button class="btn" onclick="toggleModal(true)">Settings</button>
+            <button class="btn btn-finish" onclick="finishSession()">Finish</button>
+            <button class="btn" onclick="toggleModal('settings', true)">Settings</button>
             <button class="btn" onclick="resetQuote()">Reset</button>
         </div>
     </div>
 </div>
 
-<div id="modal" class="modal">
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal">
     <div class="modal-content">
         <div class="modal-section">
             <h2>THEME</h2>
@@ -335,7 +362,39 @@
             <div class="custom-list" id="custom-list"></div>
         </div>
         
-        <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px; font-weight: 700;" onclick="toggleModal(false)">CLOSE</button>
+        <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px; font-weight: 700;" onclick="toggleModal('settings', false)">CLOSE</button>
+    </div>
+</div>
+
+<!-- Finish / Result Modal -->
+<div id="modal-result" class="modal">
+    <div class="modal-content">
+        <div class="modal-section">
+            <h2 style="color: var(--accent); letter-spacing: 6px;">SESSION SUMMARY</h2>
+            <div class="result-grid">
+                <div class="result-item">
+                    <span class="result-label">SENTENCES</span>
+                    <span class="result-value" id="res-count">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label" id="res-unit-label">AVG CPM</span>
+                    <span class="result-value" id="res-speed">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">AVG ACC</span>
+                    <span class="result-value" id="res-acc">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-section" id="res-history-section">
+            <h2>PRACTICED LIST</h2>
+            <div class="session-list" id="res-history">
+                <!-- History list here -->
+            </div>
+        </div>
+        
+        <button class="btn" style="width: 100%; color: var(--accent); border-top: 1px solid #111; padding-top: 20px; font-weight: 700; letter-spacing: 2px;" onclick="closeResult()">NEW SESSION</button>
     </div>
 </div>
 
@@ -390,10 +449,12 @@
     let currentLang = 'kr';
     let practiceMode = 'all'; 
     let customQuotes = JSON.parse(localStorage.getItem('typing_custom_quotes') || '[]');
+    let sessionHistory = []; // To store each finished quote result
+    
     let currentQuoteText = "";
     let startTime = null;
     let errors = 0;
-    let isModalOpen = false;
+    let activeModal = null;
 
     // Elements
     const display = document.getElementById('quote-display');
@@ -425,14 +486,49 @@
         resetQuote();
     };
 
-    window.toggleModal = (show) => {
-        isModalOpen = show;
-        document.getElementById('modal').style.display = show ? 'flex' : 'none';
-        if (!show) {
-            input.focus();
+    window.toggleModal = (type, show) => {
+        const modal = document.getElementById(`modal-${type}`);
+        if (show) {
+            modal.style.display = 'flex';
+            activeModal = type;
+            if (type === 'settings') renderCustomList();
         } else {
-            renderCustomList();
+            modal.style.display = 'none';
+            activeModal = null;
+            input.focus();
         }
+    };
+
+    window.finishSession = () => {
+        if (sessionHistory.length === 0) {
+            showMessage("완료된 문장이 없습니다.");
+            return;
+        }
+
+        const count = sessionHistory.length;
+        const avgSpeed = Math.round(sessionHistory.reduce((a, b) => a + b.speed, 0) / count);
+        const avgAcc = Math.round(sessionHistory.reduce((a, b) => a + b.acc, 0) / count);
+
+        document.getElementById('res-count').innerText = count;
+        document.getElementById('res-speed').innerText = avgSpeed;
+        document.getElementById('res-acc').innerText = avgAcc + '%';
+        document.getElementById('res-unit-label').innerText = currentLang === 'kr' ? 'AVG CPM' : 'AVG WPM';
+
+        const historyList = document.getElementById('res-history');
+        historyList.innerHTML = sessionHistory.map(item => `
+            <div class="session-item">
+                <div style="color: #eee; margin-bottom: 3px;">${item.text}</div>
+                <div style="font-size: 0.65rem; color: #444;">${item.speed} ${currentLang === 'kr' ? 'CPM' : 'WPM'} / ${item.acc}% Accuracy</div>
+            </div>
+        `).join('');
+
+        toggleModal('result', true);
+    };
+
+    window.closeResult = () => {
+        sessionHistory = []; // Clear session
+        toggleModal('result', false);
+        resetQuote();
     };
 
     window.resetQuote = () => {
@@ -491,7 +587,7 @@
     }
 
     input.addEventListener('input', () => {
-        if (isModalOpen || !currentQuoteText) return;
+        if (activeModal || !currentQuoteText) return;
         const spans = display.querySelectorAll('.char');
         const chars = input.value.split('');
         if (!startTime && input.value.length > 0) startTime = new Date();
@@ -512,17 +608,28 @@
 
         updateCursor(input.value.length);
 
+        let currentSpeed = 0;
+        let currentAcc = 0;
+
         if (input.value.length > 0 && startTime) {
             const sec = (new Date() - startTime) / 1000;
-            const val = currentLang === 'en' 
+            currentSpeed = currentLang === 'en' 
                 ? Math.round((input.value.length / 5) / (sec / 60)) 
                 : Math.round((input.value.length * 60) / sec);
-            const accuracy = Math.round(((input.value.length - errors) / input.value.length) * 100);
-            wpmEl.innerText = isFinite(val) ? val : 0;
-            accEl.innerText = accuracy < 0 ? 0 : accuracy;
+            currentAcc = Math.round(((input.value.length - errors) / input.value.length) * 100);
+            
+            wpmEl.innerText = isFinite(currentSpeed) ? currentSpeed : 0;
+            accEl.innerText = (currentAcc < 0 ? 0 : currentAcc);
         }
 
         if (input.value.length === currentQuoteText.length) {
+            // 문장 완료 시 데이터 저장
+            sessionHistory.push({
+                text: currentQuoteText,
+                speed: currentSpeed,
+                acc: currentAcc < 0 ? 0 : currentAcc
+            });
+
             setTimeout(renderQuote, 600);
         }
     });
