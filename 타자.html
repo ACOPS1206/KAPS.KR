@@ -361,6 +361,14 @@
         </div>
 
         <div class="modal-section">
+            <h2>REALTIME SHAKE (흔들림 감성)</h2>
+            <div class="mode-toggle">
+                <span id="shake-on" class="mode-btn active" onclick="setShakeEffect(true)">ON</span>
+                <span id="shake-off" class="mode-btn" onclick="setShakeEffect(false)">OFF</span>
+            </div>
+        </div>
+
+        <div class="modal-section">
             <h2>PRACTICE MODE</h2>
             <div class="mode-toggle">
                 <span id="mode-all" class="mode-btn active" onclick="setPracticeMode('all')">ALL QUOTES</span>
@@ -455,6 +463,7 @@
     let erroredIndices = new Set();
     let isComposing = false; 
     let isLinuxMode = false; 
+    let shakeEffect = JSON.parse(localStorage.getItem('typing_shake_effect') ?? 'true'); // 추가된 상태
 
     // --- Elements ---
     const display = document.getElementById('quote-display');
@@ -563,6 +572,13 @@
         resetQuote();
     };
 
+    window.setShakeEffect = (isOn) => {
+        shakeEffect = isOn;
+        localStorage.setItem('typing_shake_effect', isOn);
+        document.getElementById('shake-on').classList.toggle('active', isOn);
+        document.getElementById('shake-off').classList.toggle('active', !isOn);
+    };
+
     window.activateLinuxMode = () => {
         isLinuxMode = true;
         setTheme('#ff2a2a', '#880000');
@@ -608,7 +624,11 @@
     
     input.addEventListener('compositionend', () => {
         isComposing = false;
-        checkQuoteCompletion();
+        // 조합이 완료된 순간, 보류해두었던 마지막 글자의 오타 여부를 최종 확정합니다.
+        if (!input.disabled) {
+            evaluateInput();
+            checkQuoteCompletion();
+        }
     });
 
     window.resetQuote = () => {
@@ -712,15 +732,8 @@
     }
 
     // --- 수정된 핵심 입력 및 계산 로직 ---
-    input.addEventListener('input', () => {
-        if (activeModal || !currentQuoteText) return;
-        
-        // [수정] 시작 시간 보정
-        // 첫 글자를 입력하는 데 걸리는 인간의 평균 반응 시간(약 400ms)을 계산에 포함시켜 
-        // 1초 미만에서 속도가 기하급수적으로 폭등하는 버그를 원천 차단합니다.
-        if (!startTime && input.value.length > 0) {
-            startTime = new Date(Date.now() - 400);
-        }
+    function evaluateInput() {
+        if (!currentQuoteText) return;
 
         const spans = display.querySelectorAll('.char');
         const chars = input.value.split('');
@@ -734,15 +747,38 @@
             } else if (c === target) {
                 span.className = 'char correct';
             } else { 
-                if (!span.classList.contains('incorrect')) {
-                    span.className = 'char incorrect';
-                    erroredIndices.add(i); 
+                // 한글 조합 중인 현재 마지막 글자 처리
+                if (i === chars.length - 1 && isComposing) {
+                    if (shakeEffect) {
+                        // 감점(erroredIndices.add)은 하지 않고 시각적인 흔들림 감성만 실시간으로 부여
+                        span.classList.remove('incorrect');
+                        void span.offsetWidth; // 애니메이션 매번 재시작을 위한 리플로우(Reflow) 강제
+                        span.className = 'char incorrect'; 
+                    } else {
+                        span.className = 'char'; 
+                    }
+                } else {
+                    if (!span.classList.contains('incorrect')) {
+                        span.className = 'char incorrect';
+                        erroredIndices.add(i); // 조합이 끝났는데 틀렸다면 진짜 감점
+                    }
                 }
             }
         });
 
         updateCursor(input.value.length);
         calculateStats();
+    }
+
+    input.addEventListener('input', () => {
+        if (activeModal || !currentQuoteText) return;
+        
+        // 시작 시간 보정
+        if (!startTime && input.value.length > 0) {
+            startTime = new Date(Date.now() - 400);
+        }
+
+        evaluateInput();
         checkQuoteCompletion();
     });
 
@@ -892,6 +928,8 @@
         
         if (savedTheme) setTheme(savedTheme, savedError || '#ff7675');
         else setTheme('#a29bfe', '#ff7675'); 
+        
+        setShakeEffect(shakeEffect); // 흔들림 효과 설정 반영
         
         renderQuote();
     };
