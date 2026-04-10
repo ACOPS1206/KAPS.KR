@@ -352,11 +352,11 @@
         <div class="modal-section">
             <h2>THEME</h2>
             <div class="theme-selector" id="theme-container">
-                <div class="theme-dot" data-color="#a29bfe" style="background: #a29bfe;" onclick="setTheme('#a29bfe')"></div>
-                <div class="theme-dot" data-color="#55efc4" style="background: #55efc4;" onclick="setTheme('#55efc4')"></div>
-                <div class="theme-dot" data-color="#ff8a8a" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a')"></div>
-                <div class="theme-dot" data-color="#81ecec" style="background: #81ecec;" onclick="setTheme('#81ecec')"></div>
-                <div class="theme-dot" data-color="#feca57" style="background: #feca57;" onclick="setTheme('#feca57')"></div>
+                <div class="theme-dot" data-color="#a29bfe" data-error="#ff7675" style="background: #a29bfe;" onclick="setTheme('#a29bfe', '#ff7675')"></div>
+                <div class="theme-dot" data-color="#55efc4" data-error="#ff6b81" style="background: #55efc4;" onclick="setTheme('#55efc4', '#ff6b81')"></div>
+                <div class="theme-dot" data-color="#ff8a8a" data-error="#c23616" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a', '#c23616')"></div>
+                <div class="theme-dot" data-color="#81ecec" data-error="#ff4757" style="background: #81ecec;" onclick="setTheme('#81ecec', '#ff4757')"></div>
+                <div class="theme-dot" data-color="#feca57" data-error="#ff5252" style="background: #feca57;" onclick="setTheme('#feca57', '#ff5252')"></div>
             </div>
         </div>
 
@@ -530,20 +530,6 @@
         if(currentQuoteText) updateCursor(input.value.length);
     });
 
-    // 테마 색상을 기반으로 더 진한(어두운) 색상 생성 함수
-    function getDarkerColor(hex, factor = 0.8) {
-        let color = hex.replace('#', '');
-        let r = parseInt(color.substring(0, 2), 16);
-        let g = parseInt(color.substring(2, 4), 16);
-        let b = parseInt(color.substring(4, 6), 16);
-
-        r = Math.floor(r * factor);
-        g = Math.floor(g * factor);
-        b = Math.floor(b * factor);
-
-        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
-    }
-
     // 그림자 효과를 위한 RGBA 변환 함수
     function getRgba(hex, alpha) {
         let color = hex.replace('#', '');
@@ -553,16 +539,15 @@
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
-    window.setTheme = (color) => {
+    window.setTheme = (color, errorColor = '#ff4757') => {
         document.documentElement.style.setProperty('--accent', color);
         
-        // 오류 발생 시 보여줄 테마 색상 (가독성을 위해 0.8 비율로 적당히만 어둡게 조정)
-        const darkerColor = getDarkerColor(color, 0.8); 
-        document.documentElement.style.setProperty('--error', darkerColor);
-        // 그림자 효과를 약간 더 진하게(0.6) 주어 잘 보이게 처리
-        document.documentElement.style.setProperty('--error-shadow', getRgba(darkerColor, 0.6));
+        // 기계적 계산 대신 각 테마에 가장 잘 어울리도록 엄선된 예쁜 오류 색상 적용
+        document.documentElement.style.setProperty('--error', errorColor);
+        document.documentElement.style.setProperty('--error-shadow', getRgba(errorColor, 0.4));
 
         localStorage.setItem('typing_theme', color);
+        localStorage.setItem('typing_theme_error', errorColor);
         
         document.querySelectorAll('.theme-dot').forEach(dot => {
             dot.classList.toggle('active', dot.dataset.color === color);
@@ -580,7 +565,7 @@
 
     window.activateLinuxMode = () => {
         isLinuxMode = true;
-        setTheme('#ff2a2a');
+        setTheme('#ff2a2a', '#880000');
         toggleModal('settings', false);
         showMessage('리눅스 찬양하라');
         resetQuote();
@@ -903,8 +888,10 @@
 
     window.onload = () => {
         const savedTheme = localStorage.getItem('typing_theme');
-        if (savedTheme) setTheme(savedTheme);
-        else setTheme('#a29bfe'); 
+        const savedError = localStorage.getItem('typing_theme_error');
+        
+        if (savedTheme) setTheme(savedTheme, savedError || '#ff7675');
+        else setTheme('#a29bfe', '#ff7675'); 
         
         renderQuote();
     };
