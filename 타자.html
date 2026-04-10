@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minimalist Typing - Session Summary</title>
+    <title>Minimalist Typing - Advanced</title>
     <style>
         :root {
             --bg: #000000;
-            --text-off: #2a2a2a;
+            --text-off: #555555; 
             --text-on: #ffffff;
-            --accent: #a29bfe; /* 기본 연보라 */
+            --accent: #a29bfe; 
             --error: #ff5555;
             --font-main: 'Inter', 'Pretendard', -apple-system, sans-serif;
         }
@@ -77,6 +77,7 @@
             margin-bottom: 40px;
             font-weight: 300;
             transition: opacity 0.3s ease;
+            cursor: text;
         }
 
         .char {
@@ -88,6 +89,7 @@
         }
 
         .char.correct { color: var(--text-on); }
+        
         .char.incorrect { 
             color: var(--error); 
             transform: translateY(-4px); 
@@ -105,19 +107,29 @@
             color: var(--accent);
             transform: translateY(-2px); 
         }
-        
-        .char.current::after {
-            content: '';
+
+        /* Smooth Cursor */
+        #smooth-cursor {
             position: absolute;
-            bottom: -4px;
+            top: 0;
             left: 0;
-            width: 100%;
             height: 2px;
+            border-radius: 2px;
             background: var(--accent);
-            animation: blink 1s infinite;
+            transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), width 0.15s cubic-bezier(0.2, 0, 0, 1);
+            pointer-events: none;
+            will-change: transform, width;
+            opacity: 1;
         }
 
-        @keyframes blink { 50% { opacity: 0; } }
+        #smooth-cursor.blinking {
+            animation: smoothBlink 1s infinite;
+        }
+
+        @keyframes smoothBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
 
         #input-field {
             position: absolute;
@@ -150,7 +162,7 @@
         }
 
         /* Buttons */
-        .btns { display: flex; gap: 20px; }
+        .btns { display: flex; gap: 20px; z-index: 10; position: relative;}
         .btn {
             background: none;
             border: none;
@@ -230,7 +242,7 @@
         }
         .mode-btn.active { color: var(--accent); font-weight: bold; }
 
-        .modal input {
+        .modal input[type="text"] {
             width: 100%;
             background: transparent;
             border: none;
@@ -242,7 +254,7 @@
             font-family: var(--font-main);
             text-align: center;
         }
-        .modal input:focus { border-color: var(--accent); }
+        .modal input[type="text"]:focus { border-color: var(--accent); }
 
         .custom-list { max-height: 150px; overflow-y: auto; margin-bottom: 10px; scrollbar-width: none; }
         .custom-list::-webkit-scrollbar { display: none; }
@@ -252,7 +264,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.8rem;
-            color: #444;
+            color: #888;
         }
         .delete-btn { color: var(--error); cursor: pointer; opacity: 0.5; font-size: 0.7rem; }
         .delete-btn:hover { opacity: 1; }
@@ -300,7 +312,7 @@
         }
     </style>
 </head>
-<body onclick="document.getElementById('input-field').focus()">
+<body>
 
 <div class="container">
     <div class="top-nav">
@@ -312,7 +324,7 @@
 
     <div id="quote-display"></div>
     
-    <input type="text" id="input-field" autofocus autocomplete="off">
+    <input type="text" id="input-field" autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
 
     <div class="stats-footer">
         <div style="display: flex; gap: 50px;">
@@ -339,12 +351,12 @@
     <div class="modal-content">
         <div class="modal-section">
             <h2>THEME</h2>
-            <div class="theme-selector">
-                <div class="theme-dot active" style="background: #a29bfe;" onclick="setTheme('#a29bfe', this)"></div>
-                <div class="theme-dot" style="background: #55efc4;" onclick="setTheme('#55efc4', this)"></div>
-                <div class="theme-dot" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a', this)"></div>
-                <div class="theme-dot" style="background: #81ecec;" onclick="setTheme('#81ecec', this)"></div>
-                <div class="theme-dot" style="background: #feca57;" onclick="setTheme('#feca57', this)"></div>
+            <div class="theme-selector" id="theme-container">
+                <div class="theme-dot" data-color="#a29bfe" style="background: #a29bfe;" onclick="setTheme('#a29bfe')"></div>
+                <div class="theme-dot" data-color="#55efc4" style="background: #55efc4;" onclick="setTheme('#55efc4')"></div>
+                <div class="theme-dot" data-color="#ff8a8a" style="background: #ff8a8a;" onclick="setTheme('#ff8a8a')"></div>
+                <div class="theme-dot" data-color="#81ecec" style="background: #81ecec;" onclick="setTheme('#81ecec')"></div>
+                <div class="theme-dot" data-color="#feca57" style="background: #feca57;" onclick="setTheme('#feca57')"></div>
             </div>
         </div>
 
@@ -363,6 +375,9 @@
         </div>
         
         <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px; font-weight: 700;" onclick="toggleModal('settings', false)">CLOSE</button>
+        
+        <!-- 이스터에그: 리눅스 버튼 (매우 어둡게 숨김) -->
+        <span onclick="activateLinuxMode()" style="position: absolute; bottom: 15px; right: 20px; font-size: 10px; color: #111; cursor: pointer; user-select: none; transition: color 0.3s;">리눅스</span>
     </div>
 </div>
 
@@ -401,69 +416,108 @@
 <div id="msg-box"></div>
 
 <script>
-    // Constants
+    // --- Constants & Data ---
     const DEFAULT_QUOTES_KR = [
         "별을 노래하는 마음으로 모든 죽어가는 것을 사랑해야지.",
         "가장 찬란한 순간은 아직 오지 않았다.",
         "우리는 우리가 반복적으로 하는 행동의 결과이다.",
         "천천히 가는 것을 두려워 말고, 멈춰 서는 것을 두려워하라.",
         "작은 기회가 때로는 위대한 업적의 시작이다.",
-        "시작이 반이다라는 말은 시작만 해도 절반은 성공이다.",
         "실패는 다시 시작할 수 있는 기회일 뿐이다.",
-        "나의 사전에 불가능이란 단어는 없다.",
-        "행복은 습관이다, 그것을 몸에 익혀라.",
-        "가장 큰 위험은 아무런 위험도 감수하지 않는 것이다.",
-        "내일의 꿈을 가로막는 유일한 장애물은 오늘의 의심이다.",
         "햇빛은 누구에게나 공평하게 내리쬔다.",
-        "인생은 우리가 만드는 것이다, 언제나 그래왔고 앞으로도 그럴 것이다.",
-        "고통은 지나가지만 아름다움은 남는다.",
-        "단순함이 궁극의 정교함이다.",
-        "길을 잃는다는 것은 곧 길을 찾게 된다는 것이다.",
-        "자신을 믿는 순간 어떻게 살아야 할지 알게 된다.",
-        "인생은 가까이서 보면 비극이지만 멀리서 보면 희극이다.",
-        "지금 이 순간이 당신의 가장 젊은 날이다."
+        "단순함이 궁극의 정교함이다."
     ];
 
     const DEFAULT_QUOTES_EN = [
         "Simplicity is the ultimate sophistication.",
         "Stay hungry, stay foolish.",
         "The best way to predict the future is to create it.",
-        "To be or not to be, that is the question.",
         "Success is not final, failure is not fatal.",
         "Believe you can and you're halfway there.",
-        "Your time is limited, don't waste it living someone else's life.",
         "Do what you love, love what you do.",
-        "Dream big and dare to fail.",
-        "The quick brown fox jumps over the lazy dog.",
-        "Quality is not an act, it is a habit.",
-        "Be yourself; everyone else is already taken.",
-        "In the middle of every difficulty lies opportunity.",
-        "Focus on the journey, not the destination.",
-        "Action is the foundational key to all success.",
-        "Every moment is a fresh beginning.",
-        "Whatever you are, be a good one.",
-        "The power of imagination makes us infinite."
+        "Every moment is a fresh beginning."
     ];
 
-    // State
+    // 한글 분해용 상수
+    const CHO_SUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    const JOONG_SUNG = ['ㅏ', 'ㅐ', 'ㅑ', 'ㅒ', 'ㅓ', 'ㅔ', 'ㅕ', 'ㅖ', 'ㅗ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅛ', 'ㅜ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅠ', 'ㅡ', 'ㅢ', 'ㅣ'];
+    const JONG_SUNG = ['', 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+
+    // --- State ---
     let currentLang = 'kr';
     let practiceMode = 'all'; 
     let customQuotes = JSON.parse(localStorage.getItem('typing_custom_quotes') || '[]');
-    let sessionHistory = []; // To store each finished quote result
+    let sessionHistory = []; 
     
     let currentQuoteText = "";
     let startTime = null;
-    let errors = 0;
     let activeModal = null;
+    let erroredIndices = new Set();
+    let isComposing = false; 
+    let isLinuxMode = false; 
 
-    // Elements
+    // --- Elements ---
     const display = document.getElementById('quote-display');
     const input = document.getElementById('input-field');
     const wpmEl = document.getElementById('wpm');
     const accEl = document.getElementById('acc');
     const customListEl = document.getElementById('custom-list');
 
-    // Global Functions
+    // --- Utility Functions ---
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
+
+    function getHangulComponents(char) {
+        const code = char.charCodeAt(0);
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+            const offset = code - 0xAC00;
+            return {
+                cho: CHO_SUNG[Math.floor(offset / 588)],
+                joong: JOONG_SUNG[Math.floor((offset % 588) / 28)],
+                jong: JONG_SUNG[offset % 28]
+            };
+        }
+        if (CHO_SUNG.includes(char)) return { cho: char, joong: '', jong: '' };
+        if (JOONG_SUNG.includes(char)) return { cho: '', joong: char, jong: '' };
+        return null;
+    }
+
+    // 실제 타수(키스트로크) 계산
+    function getStrokeCount(char) {
+        const code = char.charCodeAt(0);
+        let strokes = 1; 
+        if (code >= 0xAC00 && code <= 0xD7A3) {
+            strokes = 0;
+            const comp = getHangulComponents(char);
+            const doubleCho = ['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ'];
+            const doubleJoong = ['ㅒ', 'ㅖ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅢ'];
+            const doubleJong = ['ㄲ', 'ㄳ', 'ㄵ', 'ㄶ', 'ㄺ', 'ㄻ', 'ㄼ', 'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅄ', 'ㅆ'];
+            
+            strokes += doubleCho.includes(comp.cho) ? 2 : 1;
+            strokes += doubleJoong.includes(comp.joong) ? 2 : 1;
+            if (comp.jong) strokes += doubleJong.includes(comp.jong) ? 2 : 1;
+        } else if (CHO_SUNG.includes(char) || JOONG_SUNG.includes(char)) {
+            strokes = (['ㄲ', 'ㄸ', 'ㅃ', 'ㅆ', 'ㅉ', 'ㅒ', 'ㅖ'].includes(char)) ? 2 : 1;
+        }
+        return strokes;
+    }
+
+    function calcTotalStrokes(str) {
+        let count = 0;
+        for(let char of str) count += getStrokeCount(char);
+        return count;
+    }
+
+    // --- Global Functions ---
     window.setLanguage = (lang) => {
         currentLang = lang;
         document.getElementById('btn-kr').classList.toggle('active', lang === 'kr');
@@ -472,17 +526,33 @@
         resetQuote();
     };
 
-    window.setTheme = (color, el) => {
+    window.addEventListener('resize', () => {
+        if(currentQuoteText) updateCursor(input.value.length);
+    });
+
+    window.setTheme = (color) => {
         document.documentElement.style.setProperty('--accent', color);
-        document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
-        el.classList.add('active');
+        localStorage.setItem('typing_theme', color);
+        
+        document.querySelectorAll('.theme-dot').forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.color === color);
+        });
         showMessage(`Theme Updated`);
     };
 
     window.setPracticeMode = (mode) => {
         practiceMode = mode;
+        isLinuxMode = false; 
         document.getElementById('mode-all').classList.toggle('active', mode === 'all');
         document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
+        resetQuote();
+    };
+
+    window.activateLinuxMode = () => {
+        isLinuxMode = true;
+        setTheme('#ff2a2a');
+        toggleModal('settings', false);
+        showMessage('리눅스 찬양하라');
         resetQuote();
     };
 
@@ -495,9 +565,235 @@
         } else {
             modal.style.display = 'none';
             activeModal = null;
-            input.focus();
+            if(!input.disabled) setTimeout(() => input.focus(), 100);
         }
     };
+
+    document.addEventListener('click', (e) => {
+        const isInteractive = e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('.btns') || e.target.closest('.modal-content');
+        if (!activeModal && !isInteractive && !input.disabled && e.pointerType === 'mouse') {
+            input.focus();
+        }
+    });
+
+    display.addEventListener('click', () => {
+        if (!activeModal && !input.disabled) input.focus();
+    });
+
+    input.addEventListener('paste', e => e.preventDefault());
+    input.addEventListener('keydown', e => {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    input.addEventListener('compositionstart', () => {
+        isComposing = true;
+    });
+    
+    input.addEventListener('compositionend', () => {
+        isComposing = false;
+        checkQuoteCompletion();
+    });
+
+    window.resetQuote = () => {
+        wpmEl.innerText = '0';
+        accEl.innerText = '0';
+        erroredIndices.clear();
+        renderQuote();
+    };
+
+    function renderQuote() {
+        display.style.opacity = 0;
+        
+        setTimeout(() => {
+            const filteredCustom = customQuotes.filter(q => q.lang === currentLang).map(q => q.text);
+            let pool = [];
+
+            if (isLinuxMode) {
+                pool = ["리눅스", "찬양하라"];
+            } else if (practiceMode === 'custom') {
+                pool = filteredCustom;
+                if (pool.length === 0) {
+                    currentQuoteText = "";
+                    input.value = "";
+                    input.disabled = true;
+                    erroredIndices.clear();
+                    display.innerHTML = `<span style="color:var(--accent); font-size:1.2rem;">저장된 문장이 없습니다. Settings에서 추가해주세요.</span>`;
+                    display.style.opacity = 1;
+                    return;
+                }
+            } else {
+                pool = [...(currentLang === 'kr' ? DEFAULT_QUOTES_KR : DEFAULT_QUOTES_EN), ...filteredCustom];
+            }
+            
+            input.disabled = false;
+            let nextQuote = pool[Math.floor(Math.random() * pool.length)];
+            
+            const uniqueQuotes = new Set(pool);
+            if (uniqueQuotes.size > 1) {
+                while(nextQuote === currentQuoteText) {
+                    nextQuote = pool[Math.floor(Math.random() * pool.length)];
+                }
+            }
+            
+            currentQuoteText = nextQuote;
+            display.innerHTML = '';
+            currentQuoteText.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.innerText = char;
+                span.className = 'char';
+                display.appendChild(span);
+            });
+
+            const cursorEl = document.createElement('div');
+            cursorEl.id = 'smooth-cursor';
+            display.appendChild(cursorEl);
+
+            display.style.opacity = 1;
+            input.value = '';
+            input.maxLength = currentQuoteText.length;
+            startTime = null;
+            erroredIndices.clear();
+            updateCursor(0);
+            
+            input.focus();
+        }, 300);
+    }
+
+    function updateCursor(index) {
+        const spans = display.querySelectorAll('.char');
+        const cursor = document.getElementById('smooth-cursor');
+        
+        spans.forEach(s => s.classList.remove('current'));
+        
+        if (!cursor) return;
+
+        let targetSpan = spans[index];
+        let x = 0;
+        let y = 0;
+        let width = 0;
+
+        if (targetSpan) {
+            targetSpan.classList.add('current');
+            x = targetSpan.offsetLeft;
+            y = targetSpan.offsetTop + targetSpan.offsetHeight + 2; 
+            width = targetSpan.offsetWidth;
+        } else if (index > 0 && index >= spans.length) {
+            const lastSpan = spans[spans.length - 1];
+            x = lastSpan.offsetLeft + lastSpan.offsetWidth;
+            y = lastSpan.offsetTop + lastSpan.offsetHeight + 2; 
+            width = 10; 
+        }
+
+        cursor.style.transform = `translate(${x}px, ${y}px)`;
+        cursor.style.width = `${width}px`;
+
+        cursor.classList.remove('blinking');
+        clearTimeout(cursor.blinkTimeout);
+        cursor.blinkTimeout = setTimeout(() => {
+            cursor.classList.add('blinking');
+        }, 500);
+    }
+
+    // --- 수정된 핵심 입력 및 계산 로직 ---
+    input.addEventListener('input', () => {
+        if (activeModal || !currentQuoteText) return;
+        
+        // [수정] 시작 시간 보정
+        // 첫 글자를 입력하는 데 걸리는 인간의 평균 반응 시간(약 400ms)을 계산에 포함시켜 
+        // 1초 미만에서 속도가 기하급수적으로 폭등하는 버그를 원천 차단합니다.
+        if (!startTime && input.value.length > 0) {
+            startTime = new Date(Date.now() - 400);
+        }
+
+        const spans = display.querySelectorAll('.char');
+        const chars = input.value.split('');
+
+        spans.forEach((span, i) => {
+            const c = chars[i];
+            const target = span.innerText;
+
+            if (c == null) {
+                span.className = 'char';
+            } else if (c === target) {
+                span.className = 'char correct';
+            } else { 
+                if (!span.classList.contains('incorrect')) {
+                    span.className = 'char incorrect';
+                    erroredIndices.add(i); 
+                }
+            }
+        });
+
+        updateCursor(input.value.length);
+        calculateStats();
+        checkQuoteCompletion();
+    });
+
+    function checkQuoteCompletion() {
+        if (!currentQuoteText || input.disabled) return;
+
+        if (input.value === currentQuoteText) {
+            finishQuote();
+        } 
+        else if (input.value.length >= currentQuoteText.length && !isComposing) {
+            finishQuote();
+        }
+    }
+
+    function finishQuote() {
+        input.disabled = true; 
+        display.style.opacity = 0; 
+        saveSessionAndNext();
+    }
+
+    function calculateStats() {
+        if (!startTime || input.value.length === 0) return;
+        
+        const elapsedSec = (new Date() - startTime) / 1000;
+        
+        const typedStrokes = currentLang === 'kr' 
+            ? calcTotalStrokes(input.value) 
+            : input.value.length; 
+
+        // [수정] 타수 계산 로직 개선 
+        // 기존의 강제 시간 고정(1.0초) 코드를 지우고, 순수 경과 시간으로 정확하게 속도를 반영합니다.
+        // 0으로 나누어지는 오류 방지 차원에서만 최소 0.1초를 안전 장치로 둡니다.
+        const safeSec = Math.max(elapsedSec, 0.1); 
+        let currentSpeed = 0;
+        
+        if (currentLang === 'en') {
+            currentSpeed = Math.round((typedStrokes / 5) / (safeSec / 60));
+        } else {
+            currentSpeed = Math.round((typedStrokes * 60) / safeSec);
+        }
+
+        let currentErrors = 0;
+        for (let errIdx of erroredIndices) {
+            if (errIdx < input.value.length) {
+                currentErrors++;
+            }
+        }
+        
+        let currentAcc = 100;
+        if (input.value.length > 0) {
+            currentAcc = Math.round(((Math.max(0, input.value.length - currentErrors)) / input.value.length) * 100);
+        }
+        
+        wpmEl.innerText = currentSpeed > 0 ? currentSpeed : 0;
+        accEl.innerText = Math.min(100, Math.max(0, currentAcc));
+    }
+    // -----------------------------------
+
+    function saveSessionAndNext() {
+        sessionHistory.push({
+            text: currentQuoteText,
+            speed: parseInt(wpmEl.innerText),
+            acc: parseInt(accEl.innerText)
+        });
+        setTimeout(renderQuote, 400); 
+    }
 
     window.finishSession = () => {
         if (sessionHistory.length === 0) {
@@ -517,8 +813,8 @@
         const historyList = document.getElementById('res-history');
         historyList.innerHTML = sessionHistory.map(item => `
             <div class="session-item">
-                <div style="color: #eee; margin-bottom: 3px;">${item.text}</div>
-                <div style="font-size: 0.65rem; color: #444;">${item.speed} ${currentLang === 'kr' ? 'CPM' : 'WPM'} / ${item.acc}% Accuracy</div>
+                <div style="color: #eee; margin-bottom: 3px;">${escapeHTML(item.text)}</div>
+                <div style="font-size: 0.65rem; color: #888;">${item.speed} ${currentLang === 'kr' ? 'CPM' : 'WPM'} / ${item.acc}% Accuracy</div>
             </div>
         `).join('');
 
@@ -526,113 +822,10 @@
     };
 
     window.closeResult = () => {
-        sessionHistory = []; // Clear session
+        sessionHistory = []; 
         toggleModal('result', false);
         resetQuote();
     };
-
-    window.resetQuote = () => {
-        wpmEl.innerText = '0';
-        accEl.innerText = '0';
-        renderQuote();
-    };
-
-    function renderQuote() {
-        display.style.opacity = 0;
-        
-        setTimeout(() => {
-            const filteredCustom = customQuotes.filter(q => q.lang === currentLang).map(q => q.text);
-            let pool = [];
-
-            if (practiceMode === 'custom') {
-                pool = filteredCustom;
-                if (pool.length === 0) {
-                    display.innerHTML = `<span style="color:var(--accent); font-size:1.2rem;">문장이 없습니다.</span>`;
-                    display.style.opacity = 1;
-                    return;
-                }
-            } else {
-                pool = [...(currentLang === 'kr' ? DEFAULT_QUOTES_KR : DEFAULT_QUOTES_EN), ...filteredCustom];
-            }
-            
-            let nextQuote = pool[Math.floor(Math.random() * pool.length)];
-            if (pool.length > 1) {
-                while(nextQuote === currentQuoteText) {
-                    nextQuote = pool[Math.floor(Math.random() * pool.length)];
-                }
-            }
-            
-            currentQuoteText = nextQuote;
-            display.innerHTML = '';
-            currentQuoteText.split('').forEach(char => {
-                const span = document.createElement('span');
-                span.innerText = char;
-                span.className = 'char';
-                display.appendChild(span);
-            });
-
-            display.style.opacity = 1;
-            input.value = '';
-            input.maxLength = currentQuoteText.length;
-            startTime = null;
-            errors = 0;
-            updateCursor(0);
-        }, 300);
-    }
-
-    function updateCursor(index) {
-        const spans = display.querySelectorAll('.char');
-        spans.forEach(s => s.classList.remove('current'));
-        if (spans[index]) spans[index].classList.add('current');
-    }
-
-    input.addEventListener('input', () => {
-        if (activeModal || !currentQuoteText) return;
-        const spans = display.querySelectorAll('.char');
-        const chars = input.value.split('');
-        if (!startTime && input.value.length > 0) startTime = new Date();
-
-        errors = 0;
-        spans.forEach((span, i) => {
-            const c = chars[i];
-            if (c == null) span.className = 'char';
-            else if (c === span.innerText) {
-                span.className = 'char correct';
-            } else { 
-                if (!span.classList.contains('incorrect')) {
-                    span.className = 'char incorrect';
-                }
-                errors++; 
-            }
-        });
-
-        updateCursor(input.value.length);
-
-        let currentSpeed = 0;
-        let currentAcc = 0;
-
-        if (input.value.length > 0 && startTime) {
-            const sec = (new Date() - startTime) / 1000;
-            currentSpeed = currentLang === 'en' 
-                ? Math.round((input.value.length / 5) / (sec / 60)) 
-                : Math.round((input.value.length * 60) / sec);
-            currentAcc = Math.round(((input.value.length - errors) / input.value.length) * 100);
-            
-            wpmEl.innerText = isFinite(currentSpeed) ? currentSpeed : 0;
-            accEl.innerText = (currentAcc < 0 ? 0 : currentAcc);
-        }
-
-        if (input.value.length === currentQuoteText.length) {
-            // 문장 완료 시 데이터 저장
-            sessionHistory.push({
-                text: currentQuoteText,
-                speed: currentSpeed,
-                acc: currentAcc < 0 ? 0 : currentAcc
-            });
-
-            setTimeout(renderQuote, 600);
-        }
-    });
 
     document.getElementById('custom-input').addEventListener('keypress', (e) => {
         if(e.key === 'Enter') {
@@ -644,6 +837,10 @@
             e.target.value = '';
             renderCustomList();
             showMessage('Added');
+            
+            if (practiceMode === 'custom' && !currentQuoteText) {
+                resetQuote();
+            }
         }
     });
 
@@ -656,12 +853,12 @@
     function renderCustomList() {
         const filtered = customQuotes.filter(q => q.lang === currentLang);
         if (filtered.length === 0) {
-            customListEl.innerHTML = '<div style="color:#222; font-size:0.7rem; text-align:center; padding: 20px 0;">Empty.</div>';
+            customListEl.innerHTML = '<div style="color:#444; font-size:0.7rem; text-align:center; padding: 20px 0;">Empty.</div>';
             return;
         }
         customListEl.innerHTML = filtered.map(q => `
             <div class="custom-item">
-                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;">${q.text}</span>
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 80%;">${escapeHTML(q.text)}</span>
                 <span class="delete-btn" onclick="deleteQuote('${q.id}')">Delete</span>
             </div>
         `).join('');
@@ -675,8 +872,11 @@
     }
 
     window.onload = () => {
+        const savedTheme = localStorage.getItem('typing_theme');
+        if (savedTheme) setTheme(savedTheme);
+        else setTheme('#a29bfe'); 
+        
         renderQuote();
-        input.focus();
     };
 </script>
 
