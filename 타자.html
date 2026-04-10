@@ -93,7 +93,7 @@
         .char.incorrect { 
             color: var(--error); 
             transform: translateY(-4px); 
-            text-shadow: 0 5px 15px rgba(255, 85, 85, 0.3);
+            text-shadow: 0 5px 15px var(--error-shadow, rgba(255, 85, 85, 0.3));
             animation: shake 0.2s ease-in-out;
         }
 
@@ -530,8 +530,38 @@
         if(currentQuoteText) updateCursor(input.value.length);
     });
 
+    // 테마 색상을 기반으로 더 진한(어두운) 색상 생성 함수
+    function getDarkerColor(hex, factor = 0.8) {
+        let color = hex.replace('#', '');
+        let r = parseInt(color.substring(0, 2), 16);
+        let g = parseInt(color.substring(2, 4), 16);
+        let b = parseInt(color.substring(4, 6), 16);
+
+        r = Math.floor(r * factor);
+        g = Math.floor(g * factor);
+        b = Math.floor(b * factor);
+
+        return `#${(1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1)}`;
+    }
+
+    // 그림자 효과를 위한 RGBA 변환 함수
+    function getRgba(hex, alpha) {
+        let color = hex.replace('#', '');
+        let r = parseInt(color.substring(0, 2), 16);
+        let g = parseInt(color.substring(2, 4), 16);
+        let b = parseInt(color.substring(4, 6), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
     window.setTheme = (color) => {
         document.documentElement.style.setProperty('--accent', color);
+        
+        // 오류 발생 시 보여줄 테마 색상 (가독성을 위해 0.8 비율로 적당히만 어둡게 조정)
+        const darkerColor = getDarkerColor(color, 0.8); 
+        document.documentElement.style.setProperty('--error', darkerColor);
+        // 그림자 효과를 약간 더 진하게(0.6) 주어 잘 보이게 처리
+        document.documentElement.style.setProperty('--error-shadow', getRgba(darkerColor, 0.6));
+
         localStorage.setItem('typing_theme', color);
         
         document.querySelectorAll('.theme-dot').forEach(dot => {
