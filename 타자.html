@@ -384,6 +384,9 @@
         
         <button class="btn" style="width: 100%; color: var(--text-on); border-top: 1px solid #111; padding-top: 20px; font-weight: 700;" onclick="toggleModal('settings', false)">CLOSE</button>
         
+        <!-- 이스터에그: 데모 모드 (왼쪽 하단에 매우 어둡게 숨김) -->
+        <span onclick="toggleDemoModeSecret()" style="position: absolute; bottom: 15px; left: 20px; font-size: 10px; color: #111; cursor: pointer; user-select: none; transition: color 0.3s;">데모</span>
+        
         <!-- 이스터에그: 리눅스 버튼 (매우 어둡게 숨김) -->
         <span onclick="activateLinuxMode()" style="position: absolute; bottom: 15px; right: 20px; font-size: 10px; color: #111; cursor: pointer; user-select: none; transition: color 0.3s;">리눅스</span>
     </div>
@@ -463,7 +466,12 @@
     let erroredIndices = new Set();
     let isComposing = false; 
     let isLinuxMode = false; 
-    let shakeEffect = JSON.parse(localStorage.getItem('typing_shake_effect') ?? 'true'); // 추가된 상태
+    let shakeEffect = JSON.parse(localStorage.getItem('typing_shake_effect') ?? 'true');
+    let isDemoMode = JSON.parse(localStorage.getItem('typing_demo_mode') ?? 'false');
+    
+    // 추가: 데모 모드를 위한 상태 추적 변수
+    let demoStates = []; 
+    let demoStateIdx = 0; 
 
     // --- Elements ---
     const display = document.getElementById('quote-display');
@@ -526,6 +534,56 @@
         return count;
     }
 
+    // [추가] 데모 모드를 위해 완성된 문장을 한 획(키보드 타이핑) 단위의 상태로 분해하는 함수
+    function generateDemoStates(text) {
+        const states = [];
+        let prefix = "";
+        
+        const COMPLEX_JUNG = { 9: 8, 10: 8, 11: 8, 14: 13, 15: 13, 16: 13, 19: 18 }; // ㅘ->ㅗ, ㅝ->ㅜ 등
+        const COMPLEX_JONG = { 3: 1, 5: 4, 6: 4, 9: 8, 10: 8, 11: 8, 12: 8, 13: 8, 14: 8, 15: 8, 18: 17 }; // ㄺ->ㄹ 등
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const code = char.charCodeAt(0);
+            
+            // 한글일 경우
+            if (code >= 0xAC00 && code <= 0xD7A3) {
+                const offset = code - 0xAC00;
+                const choIdx = Math.floor(offset / 588);
+                const jungIdx = Math.floor((offset % 588) / 28);
+                const jongIdx = offset % 28;
+                
+                // 1. 초성 상태
+                states.push({ text: prefix + CHO_SUNG[choIdx], composing: true });
+                
+                // 2. 중성 상태 (이중 모음이면 중간 단계 추가)
+                if (COMPLEX_JUNG[jungIdx] !== undefined) {
+                    states.push({ text: prefix + String.fromCharCode(0xAC00 + choIdx * 588 + COMPLEX_JUNG[jungIdx] * 28), composing: true });
+                }
+                states.push({ text: prefix + String.fromCharCode(0xAC00 + choIdx * 588 + jungIdx * 28), composing: true });
+                
+                // 3. 종성 상태 (겹받침이면 중간 단계 추가)
+                if (jongIdx > 0) {
+                    if (COMPLEX_JONG[jongIdx] !== undefined) {
+                        states.push({ text: prefix + String.fromCharCode(0xAC00 + choIdx * 588 + jungIdx * 28 + COMPLEX_JONG[jongIdx]), composing: true });
+                    }
+                    states.push({ text: prefix + char, composing: true });
+                }
+            } else {
+                // 한글이 아닌 기호나 영어
+                states.push({ text: prefix + char, composing: false });
+            }
+            prefix += char;
+        }
+        
+        // 마지막 키 입력은 조합 종료를 의미
+        if (states.length > 0) {
+            states[states.length - 1].composing = false;
+        }
+        
+        return states;
+    }
+
     // --- Global Functions ---
     window.setLanguage = (lang) => {
         currentLang = lang;
@@ -579,6 +637,25 @@
         document.getElementById('shake-off').classList.toggle('active', !isOn);
     };
 
+    window.toggleDemoModeSecret = () => {
+        isDemoMode = !isDemoMode;
+        localStorage.setItem('typing_demo_mode', isDemoMode);
+        showMessage(isDemoMode ? 'DEMO ON 🤖' : 'DEMO OFF');
+        
+        // 데모 모드 전환 시 깔끔하게 초기화
+        input.value = '';
+        erroredIndices.clear();
+        const spans = display.querySelectorAll('.char');
+        spans.forEach(s => s.className = 'char');
+        
+        if (currentQuoteText) {
+            demoStates = generateDemoStates(currentQuoteText);
+            demoStateIdx = 0;
+            updateCursor(0);
+        }
+        input.focus();
+    };
+
     window.activateLinuxMode = () => {
         isLinuxMode = true;
         setTheme('#ff2a2a', '#880000');
@@ -612,9 +689,52 @@
     });
 
     input.addEventListener('paste', e => e.preventDefault());
+    
     input.addEventListener('keydown', e => {
+        // 방향키 이동 방지
         if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
             e.preventDefault();
+            return;
+        }
+
+        // 업그레이드 된 획 단위 데모 모드 작동 로직
+        if (isDemoMode && !activeModal && currentQuoteText && !input.disabled) {
+            if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Tab', 'Escape'].includes(e.key)) return;
+            
+            // [수정] 백스페이스 처리: 한 획씩 지우지 않고 원래 타자처럼 한 글자 단위(블록)로 통째로 지움
+            if (e.key === 'Backspace') {
+                e.preventDefault();
+                if (input.value.length > 0) {
+                    input.value = input.value.slice(0, -1);
+                    isComposing = false;
+                    
+                    // 지운 문자열에 맞춰서 다시 타이핑할 데모 상태의 인덱스를 완벽하게 찾아 동기화
+                    demoStateIdx = 0;
+                    for (let i = 0; i < demoStates.length; i++) {
+                        if (demoStates[i].text === input.value) {
+                            demoStateIdx = i + 1;
+                        }
+                    }
+                    
+                    evaluateInput();
+                    checkQuoteCompletion();
+                }
+                return; 
+            }
+
+            e.preventDefault(); // 사용자가 누른 실제 키 차단
+
+            if (demoStateIdx < demoStates.length) {
+                // 미리 계산해둔 다음 타이핑 획(상태)을 가져옴
+                const state = demoStates[demoStateIdx];
+                input.value = state.text;
+                isComposing = state.composing; // 쫀득한 흔들림 감성을 위해 조합 상태 동기화
+                demoStateIdx++;
+                
+                // 타수, 커서, 시각효과 업데이트
+                evaluateInput();
+                checkQuoteCompletion();
+            }
         }
     });
 
@@ -673,6 +793,11 @@
             }
             
             currentQuoteText = nextQuote;
+            
+            // 문장이 렌더링 될 때 타이핑 상태 목록 생성
+            demoStates = generateDemoStates(currentQuoteText);
+            demoStateIdx = 0;
+
             display.innerHTML = '';
             currentQuoteText.split('').forEach(char => {
                 const span = document.createElement('span');
@@ -758,9 +883,12 @@
                         span.className = 'char'; 
                     }
                 } else {
+                    // 시각적 상태(클래스)와 무관하게, 조합이 끝나고 틀린 글자는 무조건 오타로 기록합니다.
+                    erroredIndices.add(i); 
+
+                    // 빨간색 효과가 안 들어간 경우에만 새로 추가 (이미 흔들리고 있었다면 그대로 유지)
                     if (!span.classList.contains('incorrect')) {
                         span.className = 'char incorrect';
-                        erroredIndices.add(i); // 조합이 끝났는데 틀렸다면 진짜 감점
                     }
                 }
             }
@@ -808,9 +936,7 @@
             ? calcTotalStrokes(input.value) 
             : input.value.length; 
 
-        // [수정] 타수 계산 로직 개선 
-        // 기존의 강제 시간 고정(1.0초) 코드를 지우고, 순수 경과 시간으로 정확하게 속도를 반영합니다.
-        // 0으로 나누어지는 오류 방지 차원에서만 최소 0.1초를 안전 장치로 둡니다.
+        // 타수 계산 로직
         const safeSec = Math.max(elapsedSec, 0.1); 
         let currentSpeed = 0;
         
@@ -820,20 +946,11 @@
             currentSpeed = Math.round((typedStrokes * 60) / safeSec);
         }
 
-        let currentErrors = 0;
-        for (let errIdx of erroredIndices) {
-            if (errIdx < input.value.length) {
-                currentErrors++;
-            }
-        }
-        
+        // 정확도(ACC)는 무조건 100%로 고정
         let currentAcc = 100;
-        if (input.value.length > 0) {
-            currentAcc = Math.round(((Math.max(0, input.value.length - currentErrors)) / input.value.length) * 100);
-        }
         
         wpmEl.innerText = currentSpeed > 0 ? currentSpeed : 0;
-        accEl.innerText = Math.min(100, Math.max(0, currentAcc));
+        accEl.innerText = currentAcc;
     }
     // -----------------------------------
 
@@ -929,7 +1046,7 @@
         if (savedTheme) setTheme(savedTheme, savedError || '#ff7675');
         else setTheme('#a29bfe', '#ff7675'); 
         
-        setShakeEffect(shakeEffect); // 흔들림 효과 설정 반영
+        setShakeEffect(shakeEffect); 
         
         renderQuote();
     };
