@@ -1,0 +1,462 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, X, Trash2, ChevronLeft, Check } from 'lucide-react';
+
+// 커스텀 애니메이션을 위한 CSS 스타일
+const globalStyles = `
+  @keyframes slideUpFadeBlur {
+    0% { opacity: 0; transform: translateY(20px); filter: blur(8px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+  }
+  @keyframes scaleIn {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.8) translateY(10px); }
+    70% { transform: scale(1.05) translateY(-2px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  @keyframes slideRightFade {
+    0% { opacity: 0; transform: translateX(-20px); filter: blur(4px); }
+    100% { opacity: 1; transform: translateX(0); filter: blur(0px); }
+  }
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  /* 개별 글자 타이핑 애니메이션 (느리고 부드럽게 조정됨) */
+  @keyframes charAppear {
+    0% { opacity: 0; transform: translateY(8px); filter: blur(6px); }
+    100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+  }
+
+  .animate-slide-up { animation: slideUpFadeBlur 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-pop-in { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  .animate-slide-right { animation: slideRightFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+  
+  .animate-char {
+    display: inline-block;
+    animation: charAppear 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  @keyframes bounceDelay {
+    0%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-3px); }
+  }
+  .typing-dot {
+    display: inline-block;
+    animation: bounceDelay 1.4s infinite ease-in-out both;
+  }
+  .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+  
+  /* 텍스트 밑을 미끄러지듯 움직이는 언더라인 효과 */
+  .focus-underline {
+    position: relative;
+  }
+  .focus-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    height: 2px;
+    background: #000;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0;
+    transform: translateX(-50%);
+    border-radius: 2px;
+  }
+  .focus-underline:focus-within::after {
+    width: 100%;
+  }
+  
+  /* 본문 입력 시 좌측에서 스르륵 나타나는 인디케이터 */
+  .textarea-container {
+    position: relative;
+  }
+  .textarea-container::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #000;
+    border-radius: 2px;
+    opacity: 0;
+    transform: scaleY(0.1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .textarea-container.is-typing::before {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  ::selection {
+    background: #000;
+    color: #fff;
+  }
+`;
+
+// 개별 글자 애니메이션을 처리하는 커스텀 입력 컴포넌트
+const AnimatedInput = ({ value, onChange, placeholder, className, isMultiline }) => {
+  // Set을 사용하여 현재 애니메이션이 진행 중인 여러 글자의 인덱스를 동시에 관리합니다. (빠른 타이핑 대응)
+  const [animatingIndices, setAnimatingIndices] = useState(new Set());
+  const [hasSelection, setHasSelection] = useState(false);
+  const inputRef = useRef(null);
+  const overlayRef = useRef(null);
+  
+  // 이전 글자 길이를 추적하여 새로운 글자 블록이 시작될 때만 애니메이션을 트리거합니다.
+  const prevLength = useRef((value || '').length);
+
+  const handleChange = (e) => {
+    const val = e.target.value;
+    const pos = e.target.selectionStart;
+    
+    // 글자 길이가 늘어났을 때만 (새로운 글자가 입력되었을 때만) 해당 인덱스에 애니메이션 추가
+    if (val.length > prevLength.current) {
+      const diff = val.length - prevLength.current;
+      const newIndices = [];
+      for (let i = 0; i < diff; i++) {
+        newIndices.push(pos - 1 - i);
+      }
+      
+      setAnimatingIndices(prev => {
+        const next = new Set(prev);
+        newIndices.forEach(idx => next.add(idx));
+        return next;
+      });
+
+      // 애니메이션 시간(1초) 이후에 Set에서 제거하여 정리
+      newIndices.forEach(idx => {
+        setTimeout(() => {
+          setAnimatingIndices(prev => {
+            const next = new Set(prev);
+            next.delete(idx);
+            return next;
+          });
+        }, 1000);
+      });
+    }
+    
+    prevLength.current = val.length;
+    onChange(val);
+  };
+
+  const handleSelect = (e) => {
+    setHasSelection(e.target.selectionStart !== e.target.selectionEnd);
+  };
+
+  const handleScroll = (e) => {
+    if (overlayRef.current) {
+      overlayRef.current.scrollTop = e.target.scrollTop;
+      overlayRef.current.scrollLeft = e.target.scrollLeft;
+    }
+  };
+
+  const renderText = () => {
+    if (!value) return null;
+    return value.split('').map((char, i) => {
+      // key를 {i}로 고정함으로써, 한글(ㄱ->가->강)이 조합되며 문자가 변경될 때 DOM이 새로 마운트되지 않고 업데이트만 되어 애니메이션이 부드럽게 이어집니다.
+      if (animatingIndices.has(i) && char !== ' ' && char !== '\n') {
+        return <span key={i} className="animate-char">{char}</span>;
+      }
+      return <span key={i}>{char}</span>;
+    });
+  };
+
+  const Element = isMultiline ? 'textarea' : 'input';
+  
+  const overlayClasses = isMultiline
+    ? `absolute inset-0 pointer-events-none whitespace-pre-wrap break-words overflow-hidden hide-scrollbar ${className}`
+    : `absolute inset-0 pointer-events-none whitespace-pre overflow-hidden hide-scrollbar ${className}`;
+
+  return (
+    <div className={`relative w-full ${isMultiline ? 'h-full' : ''}`}>
+      <div
+        ref={overlayRef}
+        aria-hidden="true"
+        className={`${overlayClasses} transition-opacity duration-200 ${hasSelection ? 'opacity-0' : 'opacity-100'}`}
+      >
+        {value ? renderText() : <span className="text-gray-300">{placeholder}</span>}
+      </div>
+
+      <Element
+        ref={inputRef}
+        type={isMultiline ? undefined : 'text'}
+        value={value}
+        onChange={handleChange}
+        onSelect={handleSelect}
+        onScroll={handleScroll}
+        placeholder={placeholder}
+        className={`relative w-full bg-transparent outline-none resize-none caret-black hide-scrollbar placeholder:text-transparent ${className}`}
+        style={{
+          color: hasSelection ? 'inherit' : 'transparent',
+          ...(isMultiline ? { height: '100%' } : {})
+        }}
+        spellCheck="false"
+      />
+    </div>
+  );
+};
+
+export default function App() {
+  const [notes, setNotes] = useState(() => {
+    const saved = localStorage.getItem('minimal_notes');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    return [
+      {
+        id: '1',
+        title: '미니멀 메모장에 오신 것을 환영합니다',
+        content: '복잡함은 덜어내고, 본질에만 집중했습니다.\n\n우측 하단의 + 버튼을 눌러 새로운 메모를 작성해보세요. 모든 변경사항은 브라우저에 안전하게 자동 저장됩니다.',
+        date: new Date().toISOString(),
+      }
+    ];
+  });
+
+  const [currentNote, setCurrentNote] = useState(null);
+  const [viewState, setViewState] = useState('list'); // 'list', 'edit'
+  const [animatingId, setAnimatingId] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);
+  
+  const typingTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    localStorage.setItem('minimal_notes', JSON.stringify(notes));
+  }, [notes]);
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('ko-KR', options);
+  };
+
+  const handleCreateNote = () => {
+    const newNote = {
+      id: Date.now().toString(),
+      title: '',
+      content: '',
+      date: new Date().toISOString(),
+    };
+    setCurrentNote(newNote);
+    setViewState('edit');
+  };
+
+  const handleOpenNote = (note) => {
+    setCurrentNote({ ...note });
+    setViewState('edit');
+  };
+
+  const handleSaveNote = () => {
+    if (!currentNote.title.trim() && !currentNote.content.trim()) {
+      handleCloseEdit();
+      return;
+    }
+
+    const updatedNote = {
+      ...currentNote,
+      title: currentNote.title.trim() || '제목 없는 메모',
+      date: new Date().toISOString(),
+    };
+
+    setNotes((prev) => {
+      const exists = prev.find((n) => n.id === updatedNote.id);
+      if (exists) {
+        return prev.map((n) => (n.id === updatedNote.id ? updatedNote : n));
+      }
+      return [updatedNote, ...prev];
+    });
+
+    handleCloseEdit();
+  };
+
+  const handleDeleteNote = (id, e) => {
+    if (e) e.stopPropagation();
+    
+    setAnimatingId(id);
+    
+    setTimeout(() => {
+      setNotes((prev) => prev.filter((n) => n.id !== id));
+      if (currentNote?.id === id) {
+        handleCloseEdit();
+      }
+      setAnimatingId(null);
+    }, 300);
+  };
+
+  const handleCloseEdit = () => {
+    setViewState('list');
+    setTimeout(() => setCurrentNote(null), 400); 
+  };
+
+  const handleTextChange = (field, value) => {
+    setCurrentNote(prev => ({ ...prev, [field]: value }));
+    
+    setIsTyping(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+    }, 800);
+  };
+
+  return (
+    <div className="min-h-screen bg-white text-black font-sans overflow-hidden relative flex justify-center">
+      <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+
+      <main className="w-full max-w-2xl h-screen flex flex-col relative shadow-[0_0_40px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
+        
+        {/* === LIST VIEW === */}
+        <div 
+          className={`absolute inset-0 w-full h-full flex flex-col transition-all duration-500 ease-in-out ${
+            viewState === 'list' ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12 pointer-events-none'
+          }`}
+        >
+          <header className="px-8 pt-12 pb-6 backdrop-blur-md bg-white/90 sticky top-0 z-10 flex justify-between items-end border-b border-gray-100">
+            <div className="animate-slide-right">
+              <h1 className="text-3xl font-light tracking-tight text-black mb-1">메모</h1>
+              <p className="text-sm text-gray-500 font-medium">{notes.length}개의 기록</p>
+            </div>
+          </header>
+
+          <div className="flex-1 overflow-y-auto px-6 pb-24 hide-scrollbar pt-4">
+            {notes.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400 animate-scale-in">
+                <div className="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                  <Plus className="w-8 h-8 text-gray-300" />
+                </div>
+                <p>작성된 메모가 없습니다</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 mt-2">
+                {notes.map((note, index) => (
+                  <div
+                    key={note.id}
+                    onClick={() => handleOpenNote(note)}
+                    className={`group relative p-6 bg-white border border-gray-200 rounded-3xl cursor-pointer transition-all duration-400 ease-out hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:border-black hover:-translate-y-1 ${
+                      animatingId === note.id ? 'opacity-0 scale-90 pointer-events-none' : 'opacity-0 animate-slide-up'
+                    }`}
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="pr-8">
+                      <h3 className="text-lg font-medium text-black mb-2 truncate">
+                        {note.title}
+                      </h3>
+                      <p className="text-gray-500 text-sm line-clamp-2 leading-relaxed">
+                        {note.content}
+                      </p>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-xs text-gray-400 font-medium tracking-wide">
+                        {new Date(note.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={(e) => handleDeleteNote(note.id, e)}
+                      className="absolute top-5 right-5 p-2 text-gray-300 hover:text-black hover:bg-gray-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 scale-90 group-hover:scale-100"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <button
+            onClick={handleCreateNote}
+            className="absolute bottom-8 right-8 w-14 h-14 bg-black text-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_40px_rgba(0,0,0,0.4)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 animate-pop-in z-20 group"
+          >
+            <Plus className="w-6 h-6 transition-transform duration-300 group-hover:rotate-90" />
+          </button>
+        </div>
+
+        {/* === EDIT VIEW === */}
+        <div 
+          className={`absolute inset-0 w-full h-full bg-white flex flex-col transition-all duration-500 ease-out z-30 ${
+            viewState === 'edit' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16 pointer-events-none'
+          }`}
+        >
+          {currentNote && (
+            <>
+              <header className="px-6 py-4 flex items-center justify-between border-b border-gray-100">
+                <button
+                  onClick={handleCloseEdit}
+                  className="p-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full transition-all duration-200 group"
+                >
+                  <ChevronLeft className="w-6 h-6 transition-transform group-hover:-translate-x-1" />
+                </button>
+                <div className="flex items-center gap-2">
+                  {notes.some(n => n.id === currentNote.id) && (
+                    <button
+                      onClick={() => handleDeleteNote(currentNote.id)}
+                      className="p-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-full transition-all duration-200"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  )}
+                  <button
+                    onClick={handleSaveNote}
+                    className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-medium rounded-full hover:bg-gray-800 transition-all duration-200 active:scale-95 shadow-md hover:shadow-lg"
+                  >
+                    <Check className="w-4 h-4" />
+                    완료
+                  </button>
+                </div>
+              </header>
+
+              <div className="flex-1 overflow-y-auto px-8 py-8 hide-scrollbar">
+                <div className="flex items-center gap-3 mb-6 animate-fade-in">
+                  <p className="text-xs text-gray-400 font-medium">
+                    {formatDate(currentNote.date)}
+                  </p>
+                  {isTyping && (
+                    <span className="text-xs text-black font-semibold flex items-center animate-fade-in">
+                      <span className="mr-0.5">입력 중</span>
+                      <span className="typing-dot">.</span>
+                      <span className="typing-dot">.</span>
+                      <span className="typing-dot">.</span>
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative focus-underline mb-8 animate-fade-in" style={{ animationDelay: '0.05s' }}>
+                  <AnimatedInput
+                    value={currentNote.title}
+                    onChange={(val) => handleTextChange('title', val)}
+                    placeholder="제목"
+                    className="text-3xl font-semibold text-black"
+                    isMultiline={false}
+                  />
+                </div>
+
+                <div className={`textarea-container h-[60vh] animate-fade-in ${isTyping ? 'is-typing' : ''}`} style={{ animationDelay: '0.1s' }}>
+                  <AnimatedInput
+                    isMultiline={true}
+                    value={currentNote.content}
+                    onChange={(val) => handleTextChange('content', val)}
+                    placeholder="당신의 생각을 자유롭게 적어보세요..."
+                    className="text-lg text-gray-800 leading-relaxed"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+      </main>
+    </div>
+  );
+}
