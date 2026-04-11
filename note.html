@@ -71,26 +71,6 @@
         }
         .focus-underline:focus-within::after { width: 100%; }
         
-        /* 본문 입력 시 좌측에서 스르륵 나타나는 인디케이터 */
-        .textarea-container { position: relative; }
-        .textarea-container::before {
-            content: '';
-            position: absolute;
-            left: -16px;
-            top: 8px;
-            bottom: 8px;
-            width: 2px;
-            background: #000;
-            border-radius: 2px;
-            opacity: 0;
-            transform: scaleY(0.1);
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .textarea-container.is-typing::before {
-            opacity: 1;
-            transform: scaleY(1);
-        }
-        
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar {
             -ms-overflow-style: none;
@@ -186,7 +166,7 @@
                     </div>
                 </div>
 
-                <div id="content-container" class="textarea-container h-[60vh] animate-fade-in" style="animation-delay: 0.1s">
+                <div id="content-container" class="h-[60vh] animate-fade-in" style="animation-delay: 0.1s">
                     <div class="relative w-full h-full">
                         <div id="content-overlay" aria-hidden="true" class="input-overlay whitespace-pre-wrap break-words hide-scrollbar text-lg text-gray-800 leading-relaxed"></div>
                         <textarea id="content-input" placeholder="당신의 생각을 자유롭게 적어보세요..." class="relative w-full h-full bg-transparent outline-none resize-none caret-black hide-scrollbar placeholder:text-transparent text-lg text-gray-800 leading-relaxed" spellcheck="false" style="color: transparent;"></textarea>
@@ -402,12 +382,10 @@
 
         function triggerTypingStatus() {
             typingIndicator.classList.remove('opacity-0');
-            contentContainer.classList.add('is-typing');
             
             if (typingTimeout) clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
                 typingIndicator.classList.add('opacity-0');
-                contentContainer.classList.remove('is-typing');
             }, 800);
         }
 
