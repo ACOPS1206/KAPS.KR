@@ -1,42 +1,22 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenCode JSON Maker</title>
+    <title>OpenCode JSON Maker (v1.1.25 지원)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
         
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .font-mono {
-            font-family: 'Fira Code', monospace;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'Fira Code', monospace; }
 
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-
-        .glass-card {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(51, 65, 85, 0.5);
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen p-4 md:p-8">
@@ -46,39 +26,36 @@
         <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-white flex items-center gap-3">
-                    <i data-lucide="code" class="text-indigo-400 w-8 h-8"></i>
+                    <i data-lucide="check-circle-2" class="text-emerald-400 w-8 h-8"></i>
                     OpenCode JSON Maker
                 </h1>
-                <p class="text-slate-400 mt-2">TUI 환경을 위한 커스텀 모델 설정 파일을 손쉽게 생성하세요.</p>
+                <p class="text-slate-400 mt-2">OpenCode 버전에 맞는 공식 스키마 규격을 생성합니다.</p>
             </div>
-            <div class="flex gap-2">
-                <button onclick="setTemplate('ollama')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-md text-sm border border-slate-700 transition-colors">
-                    Ollama 템플릿
-                </button>
-                <button onclick="setTemplate('lmstudio')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-md text-sm border border-slate-700 transition-colors">
-                    LM Studio 템플릿
-                </button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Left Side: Form -->
-            <div class="space-y-6">
-                <!-- Provider Settings -->
-                <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2 text-indigo-300">
-                        <i data-lucide="cpu" class="w-5 h-5"></i> 프로바이더 설정
+            <div class="flex flex-col gap-3">
+                <!-- 버전 선택 토글 -->
+                <div class="flex bg-slate-900 rounded-lg p-1 border border-slate-700 w-fit self-end">
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="version" id="verLatest" value="latest" class="peer sr-only" onchange="updateJSON()">
+                        <div class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-400 peer-checked:bg-indigo-600 peer-checked:text-white transition-all">
+                            최신 버전 (custom)
+                        </div>
+                    </label>
+                    <label class="cursor-pointer relative">
+                        <input type="radio" name="version" id="ver1125" value="1.1.25" class="peer sr-only" checked onchange="updateJSON()">
+                        <div class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-400 peer-checked:bg-emerald-600 peer-checked:text-white transition-all">
+                            v1.1.25 (provider)
+                        </div>
+                    </label>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="setTemplate('ollama')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-md text-sm border border-slate-700 transition-colors">
+                        <i data-lucide="cpu" class="w-5 h-5"></i> Provider 설정
                     </h2>
                     <div class="space-y-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 uppercase mb-1">Provider ID (Slug)</label>
-                                <input type="text" id="providerId" oninput="updateJSON()" value="my-custom-provider" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. my-local-ai">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-500 uppercase mb-1">Display Name</label>
-                                <input type="text" id="providerName" oninput="updateJSON()" value="My AI Provider" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. My Awesome AI">
-                            </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 uppercase mb-1">Provider ID (공백 없이 입력)</label>
+                            <input type="text" id="providerId" oninput="updateJSON()" value="ollama" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="e.g. ollama, openai, my-local">
                         </div>
 
                         <div>
@@ -93,7 +70,7 @@
                             <label class="block text-xs font-medium text-slate-500 uppercase mb-1">API Key</label>
                             <div class="relative">
                                 <i data-lucide="key" class="absolute left-3 top-3 text-slate-500 w-4 h-4"></i>
-                                <input type="text" id="apiKey" oninput="updateJSON()" value="none" class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="none or your-api-key">
+                                <input type="text" id="apiKey" oninput="updateJSON()" value="none" class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" placeholder="none 또는 실제 API 키">
                             </div>
                         </div>
                     </div>
@@ -103,15 +80,17 @@
                 <section class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-xl">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold flex items-center gap-2 text-emerald-300">
-                            <i data-lucide="plus-circle" class="w-5 h-5"></i> 모델 리스트
+                            <i data-lucide="layers" class="w-5 h-5"></i> 사용할 모델
                         </h2>
-                        <button onclick="addModelRow()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-1 rounded transition-colors flex items-center gap-1">
-                            <i data-lucide="plus" class="w-3 h-3"></i> 모델 추가
-                        </button>
                     </div>
                     
-                    <div id="modelsContainer" class="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        <!-- Model Rows will be added here -->
+                    <div id="modelsContainer" class="space-y-3">
+                        <div class="flex gap-3 items-end bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
+                            <div class="flex-1">
+                                <label class="block text-[10px] font-medium text-slate-500 uppercase mb-1">Model ID (예: qwen2.5-coder:7b)</label>
+                                <input type="text" id="modelId" oninput="updateJSON()" value="qwen2.5-coder:7b" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -120,33 +99,26 @@
             <div class="flex flex-col h-full">
                 <div class="bg-slate-900 border border-slate-800 rounded-xl flex flex-col h-full overflow-hidden shadow-2xl">
                     <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                        <span class="text-sm font-mono text-slate-400">opencode.json</span>
+                        <span class="text-sm font-mono text-slate-400">~/.config/opencode/opencode.json</span>
                         <div class="flex gap-2">
                             <button id="copyBtn" onclick="copyToClipboard()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-all">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
-                                <span>클립보드 복사</span>
-                            </button>
-                            <button onclick="downloadJSON()" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-all">
-                                <i data-lucide="download" class="w-4 h-4"></i>
-                                파일 저장
+                                <span>복사하기</span>
                             </button>
                         </div>
                     </div>
                     <div class="flex-1 p-0 relative overflow-hidden bg-[#0d1117]">
-                        <pre id="jsonPreview" class="p-6 text-sm font-mono text-indigo-300 overflow-auto h-[500px] leading-relaxed"></pre>
+                        <pre id="jsonPreview" class="p-6 text-sm font-mono text-indigo-300 overflow-auto h-[450px] leading-relaxed"></pre>
                     </div>
                 </div>
 
-                <div class="mt-4 p-4 bg-indigo-900/20 border border-indigo-500/20 rounded-xl flex gap-3">
-                    <i data-lucide="info" class="text-indigo-400 shrink-0 w-5 h-5"></i>
-                    <div class="text-xs text-indigo-200/80 leading-relaxed">
-                        <p class="font-bold mb-1">TUI 적용 방법:</p>
-                        <ol class="list-decimal list-inside space-y-1">
-                            <li>생성된 JSON 코드를 복사합니다.</li>
-                            <li>터미널에서 <code class="bg-black/30 px-1 rounded">~/.config/opencode/opencode.json</code> 파일을 편집합니다.</li>
-                            <li>파일이 없다면 생성하고, 기존 내용이 있다면 이 내용으로 교체합니다.</li>
-                            <li>OpenCode TUI를 재시작하면 설정한 모델을 즉시 사용할 수 있습니다.</li>
-                        </ol>
+                <div class="mt-4 p-4 bg-emerald-900/20 border border-emerald-500/20 rounded-xl flex gap-3">
+                    <i data-lucide="terminal" class="text-emerald-400 shrink-0 w-5 h-5"></i>
+                    <div class="text-xs text-emerald-100/80 leading-relaxed">
+                        <p class="font-bold mb-1">💡 TUI 적용 꿀팁:</p>
+                        <p>1. 위 JSON을 <code class="bg-black/30 px-1 rounded text-emerald-300">~/.config/opencode/opencode.json</code>에 저장하세요.</p>
+                        <p>2. 만약 설정 파일 수정이 번거롭다면, OpenCode TUI 창에서 직접 <code class="bg-black/30 px-1 rounded text-emerald-300">/connect</code> 명령어를 치고 <b>Custom Provider</b>를 선택해 인터랙티브하게 설정할 수도 있습니다.</p>
+                        <p class="mt-2 text-indigo-300">※ 상단의 버전 토글을 통해 사용 중인 OpenCode 버전에 맞는 JSON 규격을 선택할 수 있습니다.</p>
                     </div>
                 </div>
             </div>
@@ -154,101 +126,72 @@
     </div>
 
     <script>
-        let models = [{ id: 'qwen2.5-coder:7b', name: 'Qwen Coder 7B' }];
-
         function init() {
             lucide.createIcons();
-            renderModels();
-            updateJSON();
-        }
-
-        function renderModels() {
-            const container = document.getElementById('modelsContainer');
-            container.innerHTML = '';
-            
-            models.forEach((model, index) => {
-                const row = document.createElement('div');
-                row.className = 'flex gap-3 items-end bg-slate-800/50 p-3 rounded-lg border border-slate-700/50';
-                row.innerHTML = `
-                    <div class="flex-1">
-                        <label class="block text-[10px] font-medium text-slate-500 uppercase mb-1">Model ID</label>
-                        <input type="text" value="${model.id}" oninput="updateModel(${index}, 'id', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="qwen2.5-coder">
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-[10px] font-medium text-slate-500 uppercase mb-1">Display Name</label>
-                        <input type="text" value="${model.name}" oninput="updateModel(${index}, 'name', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none" placeholder="Qwen Coder">
-                    </div>
-                    <button onclick="removeModelRow(${index})" class="p-2 text-slate-500 hover:text-red-400 transition-colors" ${models.length <= 1 ? 'disabled' : ''}>
-                        <i data-lucide="trash-2" class="w-4.5 h-4.5"></i>
-                    </button>
-                `;
-                container.appendChild(row);
-            });
-            lucide.createIcons();
-        }
-
-        function addModelRow() {
-            models.push({ id: '', name: '' });
-            renderModels();
-            updateJSON();
-        }
-
-        function removeModelRow(index) {
-            if (models.length > 1) {
-                models.splice(index, 1);
-                renderModels();
-                updateJSON();
-            }
-        }
-
-        function updateModel(index, field, value) {
-            models[index][field] = value;
             updateJSON();
         }
 
         function generateJSONString() {
             const providerId = document.getElementById('providerId').value || 'provider';
-            const providerName = document.getElementById('providerName').value;
             const baseURL = document.getElementById('baseURL').value;
             const apiKey = document.getElementById('apiKey').value;
+            const modelId = document.getElementById('modelId').value || 'model-id';
+            
+            const isVersion1125 = document.getElementById('ver1125').checked;
 
-            const modelObj = {};
-            models.forEach(m => {
-                if (m.id) {
-                    modelObj[m.id] = {
-                        id: m.id,
-                        name: m.name || m.id
-                    };
-                }
-            });
+            let config = {};
 
-            const config = {
-                custom: {
-                    [providerId]: {
-                        name: providerName,
-                        npm: "@ai-sdk/openai-compatible",
-                        options: {
-                            baseURL: baseURL,
-                            apiKey: apiKey
-                        },
-                        models: modelObj
-                    }
-                },
-                model: `${providerId}/${models[0]?.id || 'model-id'}`
-            };
+            if (isVersion1125) {
+                // OpenCode v1.1.25 엄격한 스키마 구조 ("provider" 단수형 사용)
+                config = {
+                    "provider": {
+                        [providerId]: {
+                            "options": {
+                                "baseURL": baseURL,
+                                "apiKey": apiKey
+                            },
+                            "models": {
+                                [modelId]: {
+                                    "id": modelId
+                                }
+                            }
+                        }
+                    },
+                    "model": `${providerId}/${modelId}`
+                };
+            } else {
+                // 최신 버전 또는 웹 환경 스키마 구조 ("custom" 키 사용)
+                config = {
+                    "custom": {
+                        [providerId]: {
+                            "name": providerId,
+                            "npm": "@ai-sdk/openai-compatible",
+                            "options": {
+                                "baseURL": baseURL,
+                                "apiKey": apiKey
+                            },
+                            "models": {
+                                [modelId]: {
+                                    "id": modelId,
+                                    "name": modelId
+                                }
+                            }
+                        }
+                    },
+                    "model": `${providerId}/${modelId}`
+                };
+            }
 
             return JSON.stringify(config, null, 2);
         }
 
         function updateJSON() {
-            const json = generateJSONString();
-            document.getElementById('jsonPreview').textContent = json;
+            document.getElementById('jsonPreview').textContent = generateJSONString();
         }
 
         function copyToClipboard() {
-            const json = generateJSONString();
             const el = document.createElement('textarea');
-            el.value = json;
+            el.value = generateJSONString();
             document.body.appendChild(el);
             el.select();
             document.execCommand('copy');
@@ -269,32 +212,23 @@
             }, 2000);
         }
 
-        function downloadJSON() {
-            const json = generateJSONString();
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'opencode.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
         function setTemplate(type) {
             if (type === 'ollama') {
                 document.getElementById('providerId').value = 'ollama';
-                document.getElementById('providerName').value = 'Ollama Local';
                 document.getElementById('baseURL').value = 'http://localhost:11434/v1';
                 document.getElementById('apiKey').value = 'none';
-                models = [{ id: 'llama3:8b', name: 'Llama 3' }];
+                document.getElementById('modelId').value = 'qwen2.5-coder:7b';
             } else if (type === 'lmstudio') {
                 document.getElementById('providerId').value = 'lmstudio';
-                document.getElementById('providerName').value = 'LM Studio';
                 document.getElementById('baseURL').value = 'http://localhost:1234/v1';
                 document.getElementById('apiKey').value = 'lm-studio';
-                models = [{ id: 'model-id', name: 'Local Model' }];
+                document.getElementById('modelId').value = 'local-model';
+            } else if (type === 'custom') {
+                document.getElementById('providerId').value = 'custom-openai';
+                document.getElementById('baseURL').value = 'https://api.your-custom-endpoint.com/v1';
+                document.getElementById('apiKey').value = 'sk-your-api-key';
+                document.getElementById('modelId').value = 'gpt-compatible-model';
             }
-            renderModels();
             updateJSON();
         }
 
@@ -303,4 +237,4 @@
 </body>
 </html>
 
-```
+
