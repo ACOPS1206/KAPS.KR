@@ -50,15 +50,29 @@
             border-bottom: 2px solid #fff;
         }
 
-        /* 제거된 스타일: 
-           body { transition: background-color 0.2s, color 0.2s; }
-           .reveal-transition { transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out; }
-        */
+        /* 뜻 가리기 기능 스타일 추가 */
+        .meaning-text {
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        .hide-meanings .meaning-text {
+            color: transparent !important;
+            background-color: #e5e5e5;
+            cursor: pointer;
+        }
+        .dark .hide-meanings .meaning-text {
+            background-color: #262626;
+        }
+        /* 마우스 오버 / 터치 시 일시적으로 뜻 보이기 */
+        .hide-meanings .meaning-text:hover,
+        .hide-meanings .meaning-text:active {
+            color: inherit !important;
+            background-color: transparent;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-900 dark:bg-dark-bg dark:text-dark-text min-h-screen flex flex-col antialiased selection:bg-gray-200 dark:selection:bg-gray-800">
     
-    <!-- Top Navigation Bar (Minimal) -->
     <header class="px-6 py-6 flex justify-between items-center max-w-4xl mx-auto w-full">
         <div class="text-lg font-bold tracking-tighter">VOCA<span class="font-light text-gray-400">TRAINER</span></div>
         <button id="theme-toggle" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-dark-muted dark:hover:text-white focus:outline-none">
@@ -66,19 +80,15 @@
         </button>
     </header>
 
-    <!-- Main Content Area -->
     <main class="flex-grow w-full max-w-4xl mx-auto px-6 flex flex-col">
         
-        <!-- Tab Navigation (Text Only) -->
         <nav class="flex space-x-6 mb-12 text-sm">
             <button onclick="switchView('study')" id="tab-study" class="font-bold text-black dark:text-white border-b-2 border-black dark:border-white pb-1">학습모드</button>
             <button onclick="switchView('list')" id="tab-list" class="font-normal text-gray-400 hover:text-black dark:text-dark-muted dark:hover:text-white border-b-2 border-transparent pb-1">전체목록</button>
         </nav>
 
-        <!-- ====== Study View ====== -->
         <div id="study-view" class="flex-grow flex flex-col">
             
-            <!-- Config & Progress -->
             <div class="flex justify-between items-center mb-8 text-sm text-gray-500 dark:text-dark-muted">
                 <div class="flex space-x-4">
                     <label class="cursor-pointer">
@@ -90,16 +100,20 @@
                         <span class="pb-1 hover:text-gray-900 dark:hover:text-white">KO ➔ EN</span>
                     </label>
                 </div>
-                <div class="font-mono tracking-widest" id="progress-text">1 / 110</div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleMemorizeCurrent(event)" class="flex items-center space-x-1 hover:text-gray-900 dark:hover:text-white transition-colors" title="외운 단어 표시">
+                        <span id="memorize-icon" class="text-lg leading-none">○</span>
+                        <span>외움</span>
+                    </button>
+                    <div class="font-mono tracking-widest" id="progress-text">1 / 110</div>
+                </div>
             </div>
 
-            <!-- Text Display Area -->
             <div class="flex-grow flex flex-col items-center justify-center cursor-pointer group" onclick="toggleReveal()">
                 <div id="question-text" class="text-4xl sm:text-5xl md:text-6xl font-bold text-center break-words px-4 mb-6 leading-tight tracking-tight">
                     Word
                 </div>
-                <!-- opacity-0 클래스는 유지하되, 전환 효과 클래스는 제거함 (자바스크립트로 직접 제어) -->
-                <div id="answer-text" class="text-xl sm:text-2xl md:text-3xl text-gray-500 dark:text-dark-muted font-medium text-center break-words px-4 opacity-0">
+                <div id="answer-text" class="text-xl sm:text-2xl md:text-3xl text-gray-500 dark:text-dark-muted font-medium text-center break-words px-4 opacity-0 transition-opacity duration-200">
                     Meaning
                 </div>
                 <div id="reveal-hint" class="mt-12 text-xs tracking-[0.2em] text-gray-300 dark:text-gray-700 uppercase">
@@ -107,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- Navigation Controls (Minimal Text) -->
             <div class="flex justify-between items-center pt-8 pb-12 border-t border-gray-100 dark:border-dark-border mt-auto">
                 <button onclick="prevWord()" class="text-sm font-medium text-gray-400 hover:text-black dark:text-dark-muted dark:hover:text-white px-4 py-2">PREV</button>
                 <button onclick="shuffleWords()" class="text-sm font-bold tracking-widest hover:opacity-70 px-4 py-2">SHUFFLE</button>
@@ -115,19 +128,27 @@
             </div>
         </div>
 
-        <!-- ====== List View ====== -->
-        <div id="list-view" class="hidden flex-col h-full space-y-6 pb-12">
-            <input type="text" id="search-bar" onkeyup="filterList()" placeholder="검색..." class="w-full text-2xl font-light border-b border-gray-200 dark:border-dark-border bg-transparent focus:outline-none focus:border-black dark:focus:border-white py-4 placeholder-gray-300 dark:placeholder-gray-700">
+        <div id="list-view" class="hidden flex-col h-full space-y-2 pb-12">
+            <div class="flex items-center space-x-4 mb-4 border-b border-gray-200 dark:border-dark-border">
+                <input type="text" id="search-bar" onkeyup="filterList()" placeholder="검색..." class="flex-grow text-2xl font-light bg-transparent focus:outline-none py-4 placeholder-gray-300 dark:placeholder-gray-700">
+                <button onclick="toggleMeanings()" id="btn-toggle-meanings" class="whitespace-nowrap text-sm font-medium border border-gray-300 dark:border-dark-border rounded px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    뜻 가리기
+                </button>
+            </div>
 
-            <div class="flex-grow overflow-y-auto pr-2">
+            <div class="flex-grow overflow-y-auto pr-2 mt-2">
                 <table class="w-full text-left">
                     <tbody id="voca-table-body" class="divide-y divide-gray-100 dark:divide-dark-border">
-                        <!-- Data rows injected here -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
-            <div class="text-right text-xs text-gray-400 font-mono tracking-widest mt-4">
-                TOTAL: <span id="total-words-count">0</span>
+            <div class="flex justify-between items-center mt-4">
+                <div class="text-xs text-gray-400 font-mono tracking-widest">
+                    MEMORIZED: <span id="memorized-count">0</span>
+                </div>
+                <div class="text-xs text-gray-400 font-mono tracking-widest">
+                    TOTAL: <span id="total-words-count">0</span>
+                </div>
             </div>
         </div>
 
@@ -178,6 +199,10 @@
         let words = [...rawData];
         let currentIndex = 0;
         let isRevealed = false;
+        
+        // 외운 단어 상태 관리 (로컬스토리지 활용)
+        let memorizedWords = new Set(JSON.parse(localStorage.getItem('voca-memorized') || '[]'));
+        let isMeaningsHidden = false; // 뜻 가리기 상태
 
         // --- Dark Mode Logic ---
         const themeToggleBtn = document.getElementById('theme-toggle');
@@ -232,6 +257,8 @@
                 tabStudy.classList.remove(...inactiveClasses);
                 tabList.classList.add(...inactiveClasses);
                 tabList.classList.remove(...activeClasses);
+
+                updateCardText(); // 뷰 전환 시 상태 동기화
             } else {
                 studyView.classList.add('hidden');
                 studyView.classList.remove('flex');
@@ -247,21 +274,45 @@
             }
         }
 
+        // 외움 상태 토글 (학습 모드)
+        function toggleMemorizeCurrent(e) {
+            e.stopPropagation(); // 카드 뒤집기 방지
+            const currentWordEn = words[currentIndex][0];
+            toggleMemorizedStatus(currentWordEn);
+        }
+
+        // 외움 상태 토글 공통 로직
+        function toggleMemorizedStatus(wordEn) {
+            if (memorizedWords.has(wordEn)) {
+                memorizedWords.delete(wordEn);
+            } else {
+                memorizedWords.add(wordEn);
+            }
+            // 로컬 스토리지에 저장
+            localStorage.setItem('voca-memorized', JSON.stringify([...memorizedWords]));
+            
+            // 현재 활성화된 뷰 업데이트
+            if(!document.getElementById('study-view').classList.contains('hidden')) {
+                updateCardText();
+            } else {
+                renderList();
+            }
+        }
+
         function updateCardText() {
             const mode = document.querySelector('input[name="quizMode"]:checked').value;
             const currentWord = words[currentIndex];
+            const wordEn = currentWord[0];
             
             const qText = document.getElementById('question-text');
             const aText = document.getElementById('answer-text');
             const hint = document.getElementById('reveal-hint');
+            const memIcon = document.getElementById('memorize-icon');
             
             // 상태 초기화 (숨김)
             isRevealed = false;
             aText.classList.add('opacity-0');
             aText.classList.remove('opacity-100');
-            // 애니메이션 제거: translate 관련 클래스 제거
-            // aText.classList.add('translate-y-2');
-            // aText.classList.remove('translate-y-0');
             hint.style.display = 'block';
 
             if(mode === 'en-ko') {
@@ -270,6 +321,15 @@
             } else {
                 qText.textContent = currentWord[1];
                 aText.textContent = currentWord[0];
+            }
+
+            // 외운 단어 아이콘 동기화
+            if(memorizedWords.has(wordEn)) {
+                memIcon.textContent = '●';
+                memIcon.parentElement.classList.add('text-black', 'dark:text-white');
+            } else {
+                memIcon.textContent = '○';
+                memIcon.parentElement.classList.remove('text-black', 'dark:text-white');
             }
             
             document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${words.length}`;
@@ -283,9 +343,6 @@
                 // 뜻 보이기
                 aText.classList.remove('opacity-0');
                 aText.classList.add('opacity-100');
-                // 애니메이션 제거: translate 관련 클래스 제거
-                // aText.classList.remove('translate-y-2');
-                // aText.classList.add('translate-y-0');
                 hint.style.display = 'none';
                 isRevealed = true;
             } else {
@@ -313,16 +370,50 @@
         }
         function resetQuiz() { changeWord('reset'); }
 
+        // 뜻 가리기 상태 토글
+        function toggleMeanings() {
+            isMeaningsHidden = !isMeaningsHidden;
+            const listView = document.getElementById('list-view');
+            const btn = document.getElementById('btn-toggle-meanings');
+            
+            if(isMeaningsHidden) {
+                listView.classList.add('hide-meanings');
+                btn.textContent = '뜻 보이기';
+                btn.classList.add('bg-black', 'text-white', 'border-black');
+                btn.classList.remove('hover:bg-gray-100', 'dark:hover:bg-gray-800');
+            } else {
+                listView.classList.remove('hide-meanings');
+                btn.textContent = '뜻 가리기';
+                btn.classList.remove('bg-black', 'text-white', 'border-black');
+                btn.classList.add('hover:bg-gray-100', 'dark:hover:bg-gray-800');
+            }
+        }
+
         function renderList() {
             const container = document.getElementById('voca-table-body');
             document.getElementById('total-words-count').textContent = rawData.length;
+            document.getElementById('memorized-count').textContent = memorizedWords.size;
             
-            container.innerHTML = rawData.map(w => `
+            container.innerHTML = rawData.map(w => {
+                const isMem = memorizedWords.has(w[0]);
+                // 이스케이프 처리 (단어에 따옴표가 있을 경우 대비)
+                const safeWord = w[0].replace(/'/g, "\\'"); 
+                
+                return `
                 <tr class="group">
-                    <td class="py-4 text-base font-medium text-gray-900 dark:text-gray-100 w-1/2 align-top">${w[0]}</td>
-                    <td class="py-4 text-base text-gray-500 dark:text-dark-muted w-1/2 align-top">${w[1]}</td>
+                    <td class="py-4 text-base font-medium text-gray-900 dark:text-gray-100 w-1/2 align-top cursor-pointer select-none" onclick="toggleMemorizedStatus('${safeWord}')">
+                        <span class="mr-2 ${isMem ? 'text-black dark:text-white' : 'text-gray-300 dark:text-gray-700'}">${isMem ? '●' : '○'}</span>
+                        <span class="${isMem ? 'line-through text-gray-400 dark:text-gray-600 transition-colors' : 'transition-colors'}">${w[0]}</span>
+                    </td>
+                    <td class="py-4 text-base text-gray-500 dark:text-dark-muted w-1/2 align-top">
+                        <span class="meaning-text inline-block transition-all duration-200 select-none">${w[1]}</span>
+                    </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
+            
+            // 검색어 유지
+            filterList();
         }
 
         function filterList() {
@@ -350,7 +441,6 @@
         // Init
         window.onload = () => {
             updateCardText();
-            document.getElementById('total-words-count').textContent = rawData.length;
         };
     </script>
 </body>
