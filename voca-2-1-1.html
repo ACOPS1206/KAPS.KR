@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>중등 영어 단어 트레이너</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            bg: '#0a0a0a',
+                            text: '#f5f5f5',
+                            muted: '#737373',
+                            border: '#262626'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Minimalist Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #e5e5e5; }
+        .dark ::-webkit-scrollbar-thumb { background: #404040; }
+
+        /* Custom Radio Styles for Minimalist UI */
+        input[type="radio"]:checked + span {
+            color: #000;
+            font-weight: 700;
+            border-bottom: 2px solid #000;
+        }
+        .dark input[type="radio"]:checked + span {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
+
+        /* 제거된 스타일: 
+           body { transition: background-color 0.2s, color 0.2s; }
+           .reveal-transition { transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out; }
+        */
+    </style>
+</head>
+<body class="bg-white text-gray-900 dark:bg-dark-bg dark:text-dark-text min-h-screen flex flex-col antialiased selection:bg-gray-200 dark:selection:bg-gray-800">
+    
+    <!-- Top Navigation Bar (Minimal) -->
+    <header class="px-6 py-6 flex justify-between items-center max-w-4xl mx-auto w-full">
+        <div class="text-lg font-bold tracking-tighter">VOCA<span class="font-light text-gray-400">TRAINER</span></div>
+        <button id="theme-toggle" class="text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-dark-muted dark:hover:text-white focus:outline-none">
+            <span id="theme-text">DARK</span>
+        </button>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow w-full max-w-4xl mx-auto px-6 flex flex-col">
+        
+        <!-- Tab Navigation (Text Only) -->
+        <nav class="flex space-x-6 mb-12 text-sm">
+            <button onclick="switchView('study')" id="tab-study" class="font-bold text-black dark:text-white border-b-2 border-black dark:border-white pb-1">학습모드</button>
+            <button onclick="switchView('list')" id="tab-list" class="font-normal text-gray-400 hover:text-black dark:text-dark-muted dark:hover:text-white border-b-2 border-transparent pb-1">전체목록</button>
+        </nav>
+
+        <!-- ====== Study View ====== -->
+        <div id="study-view" class="flex-grow flex flex-col">
+            
+            <!-- Config & Progress -->
+            <div class="flex justify-between items-center mb-8 text-sm text-gray-500 dark:text-dark-muted">
+                <div class="flex space-x-4">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="quizMode" value="en-ko" checked onchange="resetQuiz()" class="peer sr-only">
+                        <span class="pb-1 hover:text-gray-900 dark:hover:text-white">EN ➔ KO</span>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="quizMode" value="ko-en" onchange="resetQuiz()" class="peer sr-only">
+                        <span class="pb-1 hover:text-gray-900 dark:hover:text-white">KO ➔ EN</span>
+                    </label>
+                </div>
+                <div class="font-mono tracking-widest" id="progress-text">1 / 110</div>
+            </div>
+
+            <!-- Text Display Area -->
+            <div class="flex-grow flex flex-col items-center justify-center cursor-pointer group" onclick="toggleReveal()">
+                <div id="question-text" class="text-4xl sm:text-5xl md:text-6xl font-bold text-center break-words px-4 mb-6 leading-tight tracking-tight">
+                    Word
+                </div>
+                <!-- opacity-0 클래스는 유지하되, 전환 효과 클래스는 제거함 (자바스크립트로 직접 제어) -->
+                <div id="answer-text" class="text-xl sm:text-2xl md:text-3xl text-gray-500 dark:text-dark-muted font-medium text-center break-words px-4 opacity-0">
+                    Meaning
+                </div>
+                <div id="reveal-hint" class="mt-12 text-xs tracking-[0.2em] text-gray-300 dark:text-gray-700 uppercase">
+                    Tap to reveal
+                </div>
+            </div>
+
+            <!-- Navigation Controls (Minimal Text) -->
+            <div class="flex justify-between items-center pt-8 pb-12 border-t border-gray-100 dark:border-dark-border mt-auto">
+                <button onclick="prevWord()" class="text-sm font-medium text-gray-400 hover:text-black dark:text-dark-muted dark:hover:text-white px-4 py-2">PREV</button>
+                <button onclick="shuffleWords()" class="text-sm font-bold tracking-widest hover:opacity-70 px-4 py-2">SHUFFLE</button>
+                <button onclick="nextWord()" class="text-sm font-medium text-gray-400 hover:text-black dark:text-dark-muted dark:hover:text-white px-4 py-2">NEXT</button>
+            </div>
+        </div>
+
+        <!-- ====== List View ====== -->
+        <div id="list-view" class="hidden flex-col h-full space-y-6 pb-12">
+            <input type="text" id="search-bar" onkeyup="filterList()" placeholder="검색..." class="w-full text-2xl font-light border-b border-gray-200 dark:border-dark-border bg-transparent focus:outline-none focus:border-black dark:focus:border-white py-4 placeholder-gray-300 dark:placeholder-gray-700">
+
+            <div class="flex-grow overflow-y-auto pr-2">
+                <table class="w-full text-left">
+                    <tbody id="voca-table-body" class="divide-y divide-gray-100 dark:divide-dark-border">
+                        <!-- Data rows injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-right text-xs text-gray-400 font-mono tracking-widest mt-4">
+                TOTAL: <span id="total-words-count">0</span>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Data Setup
+        const rawData = [
+            ["physical appearance", "신체적 외모"], ["tall", "키가 큰"], ["short", "키가 작은, 짧은"], ["thin", "마른, 가느다란"],
+            ["slim", "날씬한, 호리호리한"], ["overweight", "과체중의, 비만인"], ["handsome", "잘생긴"], ["pretty", "예쁜"],
+            ["wavy hair", "웨이브 머리"], ["straight hair", "생머리"], ["curly hair", "곱슬머리"], ["outgoing", "외향적인, 사교적인"],
+            ["shy", "수줍음 타는, 부끄러워하는"], ["quiet", "조용한"], ["talkative", "말하기 좋아하는, 수다스러운"], ["funny", "재미있는, 웃기는"],
+            ["serious", "진지한, 심각한"], ["T-shirt", "티셔츠"], ["pants", "바지"], ["shorts", "반바지"], ["skirt", "치마"],
+            ["dress", "드레스, 원피스"], ["shoes", "신발"], ["socks", "양말"], ["cap", "모자"], ["How much is it?", "얼마예요?"],
+            ["It's too expensive", "너무 비싸요"], ["Can I get a discount?", "할인해 주실 수 있나요?"], ["I'll take it", "그것으로 할게요 (살게요)"],
+            ["color", "색깔, 색상"], ["role model", "롤모델, 본보기"], ["respect", "존경하다, 존중하다"], ["curiosity", "호기심"],
+            ["kindness", "친절함"], ["patience", "인내심"], ["have in common", "공통점이 있다"], ["creative", "창의적인"],
+            ["passionate", "열정적인"], ["brave", "용감한"], ["honest", "정직한"], ["positive", "긍정적인"], ["modest", "겸손한"],
+            ["admit one's mistakes", "자신의 실수를 인정하다"], ["give it a try", "한번 해보다, 시도하다"], ["challenge", "도전, 도전하다"],
+            ["failure", "실패"], ["never give up", "절대 포기하지 않다"], ["hard work", "노력, 수고"], ["achieve", "달성하다, 성취하다"],
+            ["success", "성공"], ["dream", "꿈, 꿈꾸다"], ["make a difference", "변화를 일으키다, 차이를 만들다"], ["encourage", "격려하다, 권장하다"],
+            ["support", "지지하다, 후원하다"], ["influence", "영향, 영향을 주다"], ["inspire", "영감을 주다"], ["follow", "따르다, 따라가다"],
+            ["advice", "조언, 충고"], ["responsibility", "책임, 책임감"], ["confidence", "자신감, 확신"], ["leadership", "리더십, 지도력"],
+            ["cooperation", "협력, 협동"], ["teamwork", "팀워크, 협동 작업"], ["price", "가격"], ["discount", "할인"],
+            ["receipt", "영수증"], ["change", "잔돈, 거스름돈"], ["wallet", "지갑"], ["aisle", "통로"], ["section", "구역, 부문"],
+            ["department store", "백화점"], ["grocery store", "식료품점"], ["customer", "고객, 손님"], ["clerk", "점원, 직원"],
+            ["look for", "~을 찾다"], ["try on", "(옷 등을) 입어보다, 써보다"], ["size", "크기, 치수"], ["credit card", "신용카드"],
+            ["cash", "현금"], ["refund", "환불, 환불하다"], ["exchange", "교환, 교환하다"], ["guarantee", "보증, 보장하다"],
+            ["legend", "전설"], ["scream", "소리치다"], ["bleed", "피 흘리다"], ["relentless", "수그러들지 않는, 끈질긴"],
+            ["survive", "살아남다, 생존하다"], ["fierce", "사나운, 험악한, 극심한, 맹렬한"], ["eternity", "영원, 오랜 시간"],
+            ["scar", "상처, 흉터"], ["shimmer", "희미하게 빛나다"], ["splendid", "정말 좋은, 멋진"], ["let", "허락하다, 놓아두다"],
+            ["wonder", "궁금해하다, 놀라다"], ["whole", "전체의, 모든"], ["point of view", "관점, 견해"], ["unbelievable", "믿을 수 없는"],
+            ["soaring", "날아오르는, 급상승하는"], ["take ~ for granted", "~을 당연하게 여기다"], ["anxious", "불안해하는, 염려하는"],
+            ["blame", "~을 탓하다, 탓"], ["sooner or later", "조만간, 곧"], ["question", "의문, 질문, 의심하다"],
+            ["blessing", "축복"], ["hope", "바라다, ~하면 좋겠다"], ["do one's best", "최선을 다하다"], ["worried", "걱정되는"],
+            ["nervous", "초조해하는, 불안해하는"], ["well prepared", "잘 준비된"], ["take a trip", "여행을 가다"],
+            ["presentation", "발표"], ["join", "가입하다, 함께하다"], ["main goal", "주요 목표"], ["be interested in", "~에 관심이 있다"],
+            ["steal the show", "관심을 독차지하다, 주인공이 되다"], ["miss out on", "(기회를) 놓치다"], ["moment", "순간, 시기"],
+            ["Would you mind if ~?", "~해도 괜찮을까요?"], ["opportunity", "기회"], ["hurt", "상처 입은, 아프다"],
+            ["ignore", "무시하다, 못 본 척하다"], ["truth", "사실, 진실"], ["choke", "숨이 막히다, 목을 조르다"],
+            ["be obsessed (with)", "~에 집착하다, 사로잡히다"], ["honestly", "솔직히, 정말로"], ["crash", "충돌하다, 추락하다"],
+            ["explosion", "폭발, 폭파"], ["ruin", "망치다, 엉망으로 만들다"], ["imagination", "상상력, 상상"],
+            ["reach out", "손을 뻗다, 관심을 보이다"], ["trepidation", "두려움, 공포"], ["explain", "설명하다"],
+            ["hold on to", "~에 매달리다, 의지하다"], ["take a look", "살펴보다, 한번 보다"], ["spin", "회전하다, 빙빙 돌다"],
+            ["create", "창조하다, 창작하다"]
+        ];
+
+        let words = [...rawData];
+        let currentIndex = 0;
+        let isRevealed = false;
+
+        // --- Dark Mode Logic ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeText = document.getElementById('theme-text');
+
+        function updateThemeUI() {
+            if (document.documentElement.classList.contains('dark')) {
+                themeText.textContent = 'LIGHT';
+            } else {
+                themeText.textContent = 'DARK';
+            }
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+            updateThemeUI();
+        }
+
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        updateThemeUI();
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+
+        // --- Application Logic ---
+        
+        function switchView(view) {
+            const studyView = document.getElementById('study-view');
+            const listView = document.getElementById('list-view');
+            const tabStudy = document.getElementById('tab-study');
+            const tabList = document.getElementById('tab-list');
+
+            const activeClasses = ['font-bold', 'text-black', 'dark:text-white', 'border-black', 'dark:border-white'];
+            const inactiveClasses = ['font-normal', 'text-gray-400', 'dark:text-dark-muted', 'border-transparent'];
+
+            if(view === 'study') {
+                studyView.classList.remove('hidden');
+                studyView.classList.add('flex');
+                listView.classList.add('hidden');
+                listView.classList.remove('flex');
+                
+                tabStudy.classList.add(...activeClasses);
+                tabStudy.classList.remove(...inactiveClasses);
+                tabList.classList.add(...inactiveClasses);
+                tabList.classList.remove(...activeClasses);
+            } else {
+                studyView.classList.add('hidden');
+                studyView.classList.remove('flex');
+                listView.classList.remove('hidden');
+                listView.classList.add('flex');
+                
+                tabList.classList.add(...activeClasses);
+                tabList.classList.remove(...inactiveClasses);
+                tabStudy.classList.add(...inactiveClasses);
+                tabStudy.classList.remove(...activeClasses);
+                
+                renderList();
+            }
+        }
+
+        function updateCardText() {
+            const mode = document.querySelector('input[name="quizMode"]:checked').value;
+            const currentWord = words[currentIndex];
+            
+            const qText = document.getElementById('question-text');
+            const aText = document.getElementById('answer-text');
+            const hint = document.getElementById('reveal-hint');
+            
+            // 상태 초기화 (숨김)
+            isRevealed = false;
+            aText.classList.add('opacity-0');
+            aText.classList.remove('opacity-100');
+            // 애니메이션 제거: translate 관련 클래스 제거
+            // aText.classList.add('translate-y-2');
+            // aText.classList.remove('translate-y-0');
+            hint.style.display = 'block';
+
+            if(mode === 'en-ko') {
+                qText.textContent = currentWord[0];
+                aText.textContent = currentWord[1];
+            } else {
+                qText.textContent = currentWord[1];
+                aText.textContent = currentWord[0];
+            }
+            
+            document.getElementById('progress-text').textContent = `${currentIndex + 1} / ${words.length}`;
+        }
+
+        function toggleReveal() {
+            const aText = document.getElementById('answer-text');
+            const hint = document.getElementById('reveal-hint');
+            
+            if (!isRevealed) {
+                // 뜻 보이기
+                aText.classList.remove('opacity-0');
+                aText.classList.add('opacity-100');
+                // 애니메이션 제거: translate 관련 클래스 제거
+                // aText.classList.remove('translate-y-2');
+                // aText.classList.add('translate-y-0');
+                hint.style.display = 'none';
+                isRevealed = true;
+            } else {
+                // 다음 단어로 넘어가기
+                nextWord();
+            }
+        }
+
+        function changeWord(direction) {
+            if (direction === 'next') {
+                currentIndex = (currentIndex + 1) % words.length;
+            } else if (direction === 'prev') {
+                currentIndex = (currentIndex - 1 + words.length) % words.length;
+            } else if (direction === 'reset') {
+                currentIndex = 0;
+            }
+            updateCardText();
+        }
+
+        function nextWord() { changeWord('next'); }
+        function prevWord() { changeWord('prev'); }
+        function shuffleWords() {
+            words.sort(() => Math.random() - 0.5);
+            changeWord('reset');
+        }
+        function resetQuiz() { changeWord('reset'); }
+
+        function renderList() {
+            const container = document.getElementById('voca-table-body');
+            document.getElementById('total-words-count').textContent = rawData.length;
+            
+            container.innerHTML = rawData.map(w => `
+                <tr class="group">
+                    <td class="py-4 text-base font-medium text-gray-900 dark:text-gray-100 w-1/2 align-top">${w[0]}</td>
+                    <td class="py-4 text-base text-gray-500 dark:text-dark-muted w-1/2 align-top">${w[1]}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterList() {
+            const term = document.getElementById('search-bar').value.toLowerCase();
+            const rows = document.getElementById('voca-table-body').getElementsByTagName('tr');
+
+            for(let row of rows) {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? "" : "none";
+            }
+        }
+
+        // 키보드 지원
+        document.addEventListener('keydown', (e) => {
+            if(document.getElementById('study-view').classList.contains('hidden')) return;
+            
+            if(e.key === 'ArrowRight') nextWord();
+            if(e.key === 'ArrowLeft') prevWord();
+            if(e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                toggleReveal();
+            }
+        });
+
+        // Init
+        window.onload = () => {
+            updateCardText();
+            document.getElementById('total-words-count').textContent = rawData.length;
+        };
+    </script>
+</body>
+</html>
