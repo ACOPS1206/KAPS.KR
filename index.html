@@ -50,19 +50,16 @@
       <!--이곳에 추가정보 입력-->
       
       <div id="einfo" style="display: none; max-height: 0px; opacity: 0; transition: max-height 1s ease, opacity 1s ease;">
-        <h3>이메일 관련 안내</h3>
-        <p>
-          <a "style="color: white">이 도메인으로 이제 이메일을 보내실 수 있어요<br>acops@kaps.kr로 연락해 보세요!
-        </p>
+        <img src="server.png" style="height: 256px" onclick="location.href='server.html'">
       </div>
 
-      <div style="display: block; width: 100%; text-align: center; margin-bottom: 0">
+      <div style="display: block; width: 100%; text-align: center; margin-bottom: 0; transition: opacity 1s ease;" id="bottombn">
         <p style="transition: opacity 1s ease, max-height 1s ease, margin 1s ease; max-height: 200px" id="bottomtext">
           <a href="contact.html">연락처</a> | <a href="list.html">리스트</a> | <a href="design.html">디자인</a>
           <br>
           <a style="text-decoration: underline; font-size: 10px; color: gray" onclick="brun()">
             배너 표시
-          </a>&nbsp<a style="text-decoration: underline; font-size: 10px; color: gray" onclick="update()">
+          </a>&nbsp<a style="text-decoration: underline; font-size: 10px; color: gray" onclick="update(3000)">
             업데이트!
           </a>
         </p>
@@ -119,11 +116,12 @@
   </div>
   <script>
     let startsh = 1;
-
-    function update() {
+    let up;
+    function update(up) {
       setTimeout(() => {
         const einf = document.getElementById("einfo");
         einf.style.display = "block";
+        document.getElementById("bottombn").style.opacity = "0";
         setTimeout(() => {
           einf.style.maxHeight = "200px";
           setTimeout(() => {
@@ -132,11 +130,13 @@
               einf.style.opacity = "0";
               setTimeout(() => {
                 einf.style.maxHeight = "0px";
+                
                 setTimeout(() => {
                   einf.style.display = "none";
+									document.getElementById("bottombn").style.opacity = "1";
                 }, 1000);
-              }, 1000);
-            }, 3000);
+              }, 0);
+            }, up);
           }, 800)
         }, 15)
       }, 10)
@@ -240,8 +240,10 @@
               document.getElementById("main").style.minHeight = "100dvh";
               document.getElementById("main").style.opacity = "1";
               localStorage.setItem("vis", "1");
+              update(2000);
               if (typeof startBannerAnimation === 'function') startBannerAnimation();
               loadBanner();
+              
             },
               100);
           }, 1100);
@@ -253,6 +255,7 @@
           document.getElementById("main").style.minHeight = "100dvh";
           document.getElementById("main").style.opacity = "1";
           loadBanner();
+          update(1000);
         }, 100);
       }
     }
@@ -285,4 +288,4 @@
 
   <script src="script/Banner.js"></script>
 </body>
-</html>
+</html> 
