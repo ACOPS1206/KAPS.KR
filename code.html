@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Native IDE</title>
+    <!-- FontAwesome for UI Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <style>
+        /* Base Theme Variables (VS Dark) */
+        :root {
+            --bg-base: #1e1e1e;
+            --bg-toolbar: #2d2d2d;
+            --bg-sidebar: #252526;
+            --bg-tab-active: #1e1e1e;
+            --bg-tab-inactive: #2d2d2d;
+            --text-main: #cccccc;
+            --text-muted: #858585;
+            --border: #3c3c3c;
+            --accent: #007acc;
+            --bg-modal: #252526;
+        }
+
+        /* VS Light Theme */
+        body.theme-vs-light {
+            --bg-base: #ffffff;
+            --bg-toolbar: #f3f3f3;
+            --bg-sidebar: #f3f3f3;
+            --bg-tab-active: #ffffff;
+            --bg-tab-inactive: #ececec;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border: #cccccc;
+            --accent: #005a9e;
+            --bg-modal: #ffffff;
+        }
+
+        /* Catppuccin Latte (Light) */
+        body.theme-catppuccin-latte {
+            --bg-base: #eff1f5;
+            --bg-toolbar: #e6e9ef;
+            --bg-sidebar: #e6e9ef;
+            --bg-tab-active: #eff1f5;
+            --bg-tab-inactive: #dce0e8;
+            --text-main: #4c4f69;
+            --text-muted: #8c8fa1;
+            --border: #ccd0da;
+            --accent: #1e66f5;
+            --bg-modal: #e6e9ef;
+        }
+
+        /* Catppuccin Frappe */
+        body.theme-catppuccin-frappe {
+            --bg-base: #303446;
+            --bg-toolbar: #292c3c;
+            --bg-sidebar: #232634;
+            --bg-tab-active: #303446;
+            --bg-tab-inactive: #292c3c;
+            --text-main: #c6d0f5;
+            --text-muted: #838ba7;
+            --border: #414559;
+            --accent: #ca9ee6;
+            --bg-modal: #292c3c;
+        }
+
+        /* Catppuccin Macchiato */
+        body.theme-catppuccin-macchiato {
+            --bg-base: #24273a;
+            --bg-toolbar: #1e2030;
+            --bg-sidebar: #181926;
+            --bg-tab-active: #24273a;
+            --bg-tab-inactive: #1e2030;
+            --text-main: #cad3f5;
+            --text-muted: #8087a2;
+            --border: #363a4f;
+            --accent: #c6a0f6;
+            --bg-modal: #1e2030;
+        }
+
+        /* Catppuccin Mocha */
+        body.theme-catppuccin-mocha {
+            --bg-base: #1e1e2e;
+            --bg-toolbar: #181825;
+            --bg-sidebar: #11111b;
+            --bg-tab-active: #1e1e2e;
+            --bg-tab-inactive: #181825;
+            --text-main: #cdd6f4;
+            --text-muted: #a6adc8;
+            --border: #313244;
+            --accent: #cba6f7;
+            --bg-modal: #181825;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100%; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-base); color: var(--text-main); overflow: hidden; transition: background 0.3s, color 0.3s; }
+        
+        #app { display: flex; flex-direction: column; height: 100vh; }
+        
+        /* Toolbar */
+        #toolbar { height: 40px; background: var(--bg-toolbar); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid var(--border); }
+        .toolbar-left, .toolbar-right { display: flex; align-items: center; gap: 10px; }
+        .title { font-weight: bold; margin-right: 20px; font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        
+        button { background: transparent; color: var(--text-main); border: 1px solid var(--border); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+        button:hover { background: rgba(255,255,255,0.1); border-color: var(--text-muted); }
+        select { background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; outline: none; }
+        
+        #run-btn { background: var(--accent); color: #fff; border: none; font-weight: bold; }
+        #run-btn:hover { filter: brightness(1.2); }
+
+        /* Workbench Layout */
+        #workbench { display: flex; flex: 1; overflow: hidden; }
+
+        /* Sidebar */
+        #sidebar { width: 250px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 10px 15px; font-size: 12px; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-actions { display: flex; gap: 5px; }
+        .sidebar-actions button { border: none; padding: 4px; font-size: 14px; color: var(--text-muted); }
+        .sidebar-actions button:hover { color: var(--text-main); background: transparent; border-color: transparent; }
+        
+        #file-list { flex: 1; overflow-y: auto; padding: 5px 0; }
+        .file-list-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 15px; font-size: 13px; cursor: pointer; user-select: none; }
+        .file-list-item:hover { background: rgba(255,255,255,0.05); }
+        .file-list-item.active { background: rgba(255,255,255,0.08); color: var(--accent); font-weight: 500; }
+        .file-info { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .file-actions { display: none; gap: 5px; }
+        .file-list-item:hover .file-actions { display: flex; }
+        .file-actions button { padding: 2px 5px; font-size: 11px; border: none; }
+
+        /* Main Area */
+        #main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        /* Tabs */
+        #tabs-container { height: 35px; background: var(--bg-toolbar); display: flex; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .tab { padding: 0 15px; height: 100%; display: flex; align-items: center; gap: 8px; font-size: 13px; background: var(--bg-tab-inactive); border-right: 1px solid var(--border); cursor: pointer; border-top: 2px solid transparent; user-select: none; white-space: nowrap; }
+        .tab.active { background: var(--bg-tab-active); color: var(--accent); border-top: 2px solid var(--accent); font-weight: 500; }
+        .tab .close-btn { font-size: 10px; color: var(--text-muted); padding: 2px; border-radius: 50%; }
+        .tab .close-btn:hover { color: #ff6b6b; background: rgba(255,0,0,0.1); }
+        
+        /* Split View */
+        #split-view { display: flex; flex: 1; height: 100%; }
+        #monaco-container { flex: 1; height: 100%; min-width: 0; }
+        #preview-container { flex: 1; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: #fff; position: relative; }
+        #preview-frame { flex: 1; width: 100%; height: 100%; border: none; }
+
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-modal); width: 600px; max-height: 80vh; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .modal-body { padding: 15px 20px; overflow-y: auto; flex: 1; }
+        
+        /* Theme JSON Specific */
+        #theme-json-textarea { width: 100%; height: 300px; background: var(--bg-base); color: var(--text-main); border: 1px solid var(--border); padding: 10px; font-family: monospace; resize: none; margin-bottom: 10px; outline: none; }
+
+        /* Icons */
+        .icon-html { color: #e34c26; }
+        .icon-css { color: #264de4; }
+        .icon-js { color: #f1e05a; }
+        .icon-folder { color: #dcb67a; }
+    </style>
+</head>
+<body class="theme-vs-dark">
+    <div id="app">
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <div class="toolbar-left">
+                <div class="title"><i class="fa-solid fa-code"></i> Vibe IDE</div>
+                <select id="theme-selector">
+                    <option value="vs-dark">VS Dark</option>
+                    <option value="vs-light">VS Light</option>
+                    <option value="catppuccin-latte">Catppuccin Latte</option>
+                    <option value="catppuccin-frappe">Catppuccin Frappé</option>
+                    <option value="catppuccin-macchiato">Catppuccin Macchiato</option>
+                    <option value="catppuccin-mocha">Catppuccin Mocha</option>
+                </select>
+                <button id="btn-import-theme"><i class="fa-solid fa-palette"></i> Import Theme</button>
+            </div>
+            <div class="toolbar-right">
+                <span style="font-size: 11px; color: #a6e3a1; margin-right: 10px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-bolt"></i> Live Preview</span>
+                <button id="run-btn" title="Force Refresh (Ctrl+Enter)"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+            </div>
+        </div>
+        
+        <!-- Workbench -->
+        <div id="workbench">
+            <!-- Sidebar -->
+            <div id="sidebar">
+                <div class="sidebar-header">
+                    <span><i class="fa-solid fa-folder-tree"></i> Explorer</span>
+                    <div class="sidebar-actions">
+                        <button id="btn-new-file" title="New File"><i class="fa-solid fa-file-circle-plus"></i></button>
+                        <button id="btn-new-folder" title="New Folder"><i class="fa-solid fa-folder-plus"></i></button>
+                        <button id="btn-upload" title="Upload File"><i class="fa-solid fa-upload"></i></button>
+                        <input type="file" id="file-upload-input" multiple style="display: none;">
+                    </div>
+                </div>
+                <div id="file-list"></div>
+            </div>
+
+            <!-- Main Editing Area -->
+            <div id="main-area">
+                <!-- Tabs -->
+                <div id="tabs-container"></div>
+                
+                <!-- Split View -->
+                <div id="split-view">
+                    <div id="monaco-container"></div>
+                    <div id="preview-container">
+                        <iframe id="preview-frame" sandbox="allow-scripts allow-modals"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Theme Modal -->
+    <div id="theme-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span><i class="fa-solid fa-code"></i> Import Custom Theme (JSON)</span>
+                <button class="close-modal" data-target="theme-modal" style="border:none; font-size:16px; background:transparent; color:inherit; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 12px; margin-bottom: 10px; color: var(--text-muted);">Paste a valid Monaco Editor theme JSON object below.</p>
+                <textarea id="theme-json-textarea" placeholder='{\n  "base": "vs-dark",\n  "inherit": true,\n  "rules": [],\n  "colors": {}\n}'></textarea>
+                <button id="btn-apply-theme" style="width: 100%; justify-content: center; background: var(--accent); color: white; padding: 10px;">Apply Custom Theme</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Virtual File System (Initial Hello World)
+        const virtualFS = {
+            'index.html': { content: `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Hello World</title>\n</head>\n<body>\n  <h1>Hello World</h1>\n  <button onclick="sayHello()">Click Me</button>\n</body>\n</html>`, language: 'html' },
+            'styles/main.css': { content: `body {\n  font-family: sans-serif;\n  display: flex;\n  flex-direction: column;\n  align-items: center;\n  justify-content: center;\n  height: 100vh;\n  margin: 0;\n  background-color: #f0f2f5;\n}\n\nh1 {\n  color: #333;\n}\n\nbutton {\n  padding: 10px 20px;\n  background-color: #007acc;\n  color: white;\n  border: none;\n  border-radius: 4px;\n  cursor: pointer;\n}`, language: 'css' },
+            'scripts/app.js': { content: `function sayHello() {\n  alert('Hello World!');\n}`, language: 'javascript' }
+        };
+
+        let currentFile = 'index.html';
+        let editor = null;
+        const models = {}; 
+
+        // Monaco Worker Configuration (Combine workerMain + Language Worker into one Blob)
+        window.MonacoEnvironment = {
+            getWorker: async function(workerId, label) {
+                const version = '0.45.0';
+                const baseUrl = `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${version}/min`;
+                
+                let workerPath = 'vs/base/worker/workerMain.js'; // Default basic text worker
+                
+                if (label === 'json') {
+                    workerPath = 'vs/language/json/jsonWorker.js';
+                } else if (label === 'css' || label === 'scss' || label === 'less') {
+                    workerPath = 'vs/language/css/cssWorker.js';
+                } else if (label === 'html' || label === 'handlebars' || label === 'razor') {
+                    workerPath = 'vs/language/html/htmlWorker.js';
+                } else if (label === 'typescript' || label === 'javascript') {
+                    workerPath = 'vs/language/typescript/tsWorker.js';
+                }
+
+                // Fetch BOTH the main worker (which contains the AMD 'define' loader) AND the specific language worker
+                const fetchMain = fetch(`${baseUrl}/vs/base/worker/workerMain.js`).then(r => r.text());
+                const fetchLang = workerPath !== 'vs/base/worker/workerMain.js' 
+                    ? fetch(`${baseUrl}/${workerPath}`).then(r => r.text()) 
+                    : Promise.resolve('');
+
+                const [workerMainText, langWorkerText] = await Promise.all([fetchMain, fetchLang]);
+                
+                // Combine them to completely bypass importScripts NetworkError and 'define is not defined' ReferenceError!
+                const blob = new Blob([
+                    `self.MonacoEnvironment = { baseUrl: '${baseUrl}/' };\n`,
+                    workerMainText,
+                    `\n`,
+                    langWorkerText
+                ], { type: 'application/javascript' });
+                
+                return new Worker(URL.createObjectURL(blob));
+            }
+        };
+
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+        require(['vs/editor/editor.main'], function() {
+            
+            // Define all Catppuccin Themes for Monaco
+            monaco.editor.defineTheme('catppuccin-latte', {
+                base: 'vs', inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: '8839ef' },
+                    { token: 'string', foreground: '40a02b' },
+                    { token: 'number', foreground: 'fe640b' },
+                    { token: 'comment', foreground: '9ca0b0', fontStyle: 'italic' },
+                    { token: 'tag', foreground: '1e66f5' },
+                    { token: 'attribute.name', foreground: 'df8e1d' }
+                ],
+                colors: { 'editor.background': '#eff1f5', 'editor.foreground': '#4c4f69', 'editorLineNumber.foreground': '#bcc0cc', 'editorCursor.foreground': '#dc8a78', 'editor.selectionBackground': '#acb0be', 'editor.lineHighlightBackground': '#e6e9ef' }
+            });
+
+            monaco.editor.defineTheme('catppuccin-frappe', {
+                base: 'vs-dark', inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: 'ca9ee6' },
+                    { token: 'string', foreground: 'a6d189' },
+                    { token: 'number', foreground: 'ef9f76' },
+                    { token: 'comment', foreground: '737994', fontStyle: 'italic' },
+                    { token: 'tag', foreground: '8caaee' },
+                    { token: 'attribute.name', foreground: 'e5c890' }
+                ],
+                colors: { 'editor.background': '#303446', 'editor.foreground': '#c6d0f5', 'editorLineNumber.foreground': '#737994', 'editorCursor.foreground': '#f2d5cf', 'editor.selectionBackground': '#51576d', 'editor.lineHighlightBackground': '#292c3c' }
+            });
+
+            monaco.editor.defineTheme('catppuccin-macchiato', {
+                base: 'vs-dark', inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: 'c6a0f6' },
+                    { token: 'string', foreground: 'a6da95' },
+                    { token: 'number', foreground: 'f5a97f' },
+                    { token: 'comment', foreground: '6e738d', fontStyle: 'italic' },
+                    { token: 'tag', foreground: '8aadf4' },
+                    { token: 'attribute.name', foreground: 'eed49f' }
+                ],
+                colors: { 'editor.background': '#24273a', 'editor.foreground': '#cad3f5', 'editorLineNumber.foreground': '#6e738d', 'editorCursor.foreground': '#f4dbd6', 'editor.selectionBackground': '#494d64', 'editor.lineHighlightBackground': '#1e2030' }
+            });
+
+            monaco.editor.defineTheme('catppuccin-mocha', {
+                base: 'vs-dark', inherit: true,
+                rules: [
+                    { token: 'keyword', foreground: 'cba6f7' },
+                    { token: 'string', foreground: 'a6e3a1' },
+                    { token: 'number', foreground: 'fab387' },
+                    { token: 'comment', foreground: '6c7086', fontStyle: 'italic' },
+                    { token: 'tag', foreground: '89b4fa' },
+                    { token: 'attribute.name', foreground: 'f9e2af' }
+                ],
+                colors: { 'editor.background': '#1e1e2e', 'editor.foreground': '#cdd6f4', 'editorLineNumber.foreground': '#6c7086', 'editorCursor.foreground': '#f5e0dc', 'editor.selectionBackground': '#585b70', 'editor.lineHighlightBackground': '#181825' }
+            });
+
+            // Initialize File Models
+            Object.keys(virtualFS).forEach(initFileModel);
+
+            // Create Editor with advanced features enabled
+            editor = monaco.editor.create(document.getElementById('monaco-container'), {
+                model: models[currentFile],
+                theme: 'vs-dark',
+                automaticLayout: true,
+                fontSize: 14,
+                minimap: { enabled: false },
+                padding: { top: 10 },
+                colorDecorators: true, // Enables color picker
+                autoClosingTags: true,
+                autoClosingBrackets: 'always',
+                autoClosingQuotes: 'always',
+                formatOnType: true,
+                suggest: { snippetsPreventQuickSuggestions: false }
+            });
+
+            // Configure HTML Language defaults for better inline CSS autocomplete
+            monaco.languages.html.htmlDefaults.setOptions({
+                suggest: { html5: true },
+                format: { enable: true }
+            });
+
+            // --- 사용자 정의: HTML href/src 경로 자동 완성 ---
+            monaco.languages.registerCompletionItemProvider('html', {
+                triggerCharacters: ['"', "'", '/', '.'],
+                provideCompletionItems: function (model, position) {
+                    const textUntilPosition = model.getValueInRange({
+                        startLineNumber: position.lineNumber,
+                        startColumn: 1,
+                        endLineNumber: position.lineNumber,
+                        endColumn: position.column
+                    });
+
+                    // 현재 커서가 href="" 또는 src="" 속성 따옴표 내부인지 확인
+                    const match = textUntilPosition.match(/(href|src)\s*=\s*["']([^"']*)$/i);
+                    if (!match) {
+                        return { suggestions: [] };
+                    }
+
+                    // 가상 파일 시스템(virtualFS)의 모든 경로를 추천 아이템으로 변환
+                    const suggestions = Object.keys(virtualFS).map(filename => {
+                        const isFolder = virtualFS[filename].isFolder;
+                        return {
+                            label: filename,
+                            kind: isFolder ? monaco.languages.CompletionItemKind.Folder : monaco.languages.CompletionItemKind.File,
+                            insertText: filename,
+                            detail: isFolder ? '폴더 (Folder)' : '로컬 파일 (Virtual File)',
+                        };
+                    });
+
+                    return { suggestions: suggestions };
+                }
+            });
+
+            // --- Real-Time Live Preview (Debounced) ---
+            let typingTimer;
+            editor.onDidChangeModelContent(() => {
+                clearTimeout(typingTimer);
+                // Update preview automatically 500ms after the user stops typing
+                typingTimer = setTimeout(() => {
+                    runBuild();
+                }, 500); 
+            });
+
+            // Custom Script to force HTML Auto-Closing Tags
+            editor.onKeyUp((e) => {
+                // If user types '>'
+                if (e.browserEvent.key === '>') {
+                    const model = editor.getModel();
+                    if (model.getLanguageId() !== 'html') return;
+                    
+                    const position = editor.getPosition();
+                    const textUntilPosition = model.getValueInRange({
+                        startLineNumber: position.lineNumber,
+                        startColumn: 1,
+                        endLineNumber: position.lineNumber,
+                        endColumn: position.column
+                    });
+                    
+                    // Match standard opening tags
+                    const match = textUntilPosition.match(/<([a-zA-Z0-9\-]+)[^>]*>$/);
+                    if (match) {
+                        const tag = match[1];
+                        // Skip self-closing void elements
+                        const voidElements = ['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'];
+                        if (!voidElements.includes(tag.toLowerCase())) {
+                            editor.executeEdits('auto-close-tag', [{
+                                range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                                text: `</${tag}>`,
+                                forceMoveMarkers: true
+                            }]);
+                            // Set cursor back inside the tags
+                            editor.setPosition(position);
+                        }
+                    }
+                }
+            });
+
+            renderSidebarFileList();
+            renderTabs();
+            runBuild();
+        });
+
+        // Helpers
+        function getIcon(filename, isFolder) {
+            if (isFolder) return 'fa-solid fa-folder icon-folder';
+            if (filename.endsWith('.html')) return 'fa-brands fa-html5 icon-html';
+            if (filename.endsWith('.css')) return 'fa-brands fa-css3-alt icon-css';
+            if (filename.endsWith('.js')) return 'fa-brands fa-js icon-js';
+            return 'fa-regular fa-file';
+        }
+        
+        function getLanguage(filename) {
+            if (filename.endsWith('.js')) return 'javascript';
+            if (filename.endsWith('.css')) return 'css';
+            if (filename.endsWith('.html')) return 'html';
+            if (filename.endsWith('.json')) return 'json';
+            return 'plaintext';
+        }
+
+        function initFileModel(filename) {
+            if (virtualFS[filename].isFolder) return;
+            if (!models[filename]) {
+                models[filename] = monaco.editor.createModel(
+                    virtualFS[filename].content || '', 
+                    virtualFS[filename].language || getLanguage(filename)
+                );
+            }
+        }
+
+        // --- Tabs Rendering ---
+        function renderTabs() {
+            const tabs = document.getElementById('tabs-container');
+            tabs.innerHTML = '';
+            for (const filename of Object.keys(virtualFS)) {
+                if (virtualFS[filename].isFolder) continue;
+
+                const div = document.createElement('div');
+                div.className = `tab ${filename === currentFile ? 'active' : ''}`;
+                
+                div.innerHTML = `
+                    <i class="${getIcon(filename, false)}"></i> 
+                    ${filename.split('/').pop()}
+                `;
+                div.onclick = (e) => {
+                    if(e.target.classList.contains('close-btn')) return;
+                    openFile(filename);
+                };
+                tabs.appendChild(div);
+            }
+        }
+
+        function openFile(filename) {
+            if (virtualFS[filename].isFolder) return;
+            if(currentFile && models[currentFile]) {
+                virtualFS[currentFile].content = models[currentFile].getValue();
+            }
+            currentFile = filename;
+            editor.setModel(models[filename]);
+            renderTabs();
+            renderSidebarFileList(); // update active state
+        }
+
+        // --- Bundler (Run Build) ---
+        function runBuild() {
+            if (!editor) return;
+            
+            virtualFS[currentFile].content = models[currentFile].getValue();
+
+            let htmlCode = '';
+            let cssCode = '';
+            let jsCode = '';
+
+            for (const [filename, file] of Object.entries(virtualFS)) {
+                if (file.isFolder) continue;
+                const content = models[filename].getValue();
+                
+                if (filename.endsWith('.html') && htmlCode === '') htmlCode = content;
+                if (filename.endsWith('.css')) cssCode += `/* ${filename} */\n${content}\n`;
+                if (filename.endsWith('.js')) jsCode += `/* ${filename} */\n${content}\n`;
+            }
+
+            if(!htmlCode) htmlCode = "<h1>Error: index.html is missing.</h1>";
+
+            if (htmlCode.includes('</head>')) {
+                htmlCode = htmlCode.replace('</head>', `<style>\n${cssCode}\n</style>\n</head>`);
+            } else {
+                htmlCode = `<style>\n${cssCode}\n</style>\n` + htmlCode;
+            }
+
+            if (htmlCode.includes('</body>')) {
+                htmlCode = htmlCode.replace('</body>', `<script>\n${jsCode}\n<\/script>\n</body>`);
+            } else {
+                htmlCode += `\n<script>\n${jsCode}\n<\/script>`;
+            }
+
+            document.getElementById('preview-frame').srcdoc = htmlCode;
+        }
+
+        // --- Theme Management ---
+        const themeSelector = document.getElementById('theme-selector');
+        let customThemeCount = 0;
+
+        themeSelector.addEventListener('change', (e) => {
+            const theme = e.target.value;
+            
+            // Set Monaco Theme
+            if(theme === 'vs-light') monaco.editor.setTheme('vs');
+            else monaco.editor.setTheme(theme);
+            
+            // Set UI Theme
+            if (theme.startsWith('catppuccin-') || theme === 'vs-dark' || theme === 'vs-light') {
+                document.body.className = `theme-${theme}`;
+            } else {
+                document.body.className = 'theme-vs-dark';
+            }
+        });
+
+        // --- Keyboard Shortcuts ---
+        document.getElementById('run-btn').addEventListener('click', runBuild);
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runBuild();
+        });
+
+
+        // ==========================================
+        // Sidebar File Manager Logic
+        // ==========================================
+        function renderSidebarFileList() {
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            const sortedFiles = Object.keys(virtualFS).sort();
+
+            sortedFiles.forEach(filename => {
+                const isFolder = virtualFS[filename].isFolder;
+                const div = document.createElement('div');
+                div.className = `file-list-item ${filename === currentFile ? 'active' : ''}`;
+                
+                div.innerHTML = `
+                    <div class="file-info">
+                        <i class="${getIcon(filename, isFolder)}"></i> 
+                        <span>${filename}</span>
+                    </div>
+                    <div class="file-actions">
+                        ${!isFolder ? `<button onclick="downloadFile('${filename}')" title="Download"><i class="fa-solid fa-download"></i></button>` : ''}
+                        <button onclick="deleteFile('${filename}')" title="Delete"><i class="fa-solid fa-trash" style="color:#ff6b6b"></i></button>
+                    </div>
+                `;
+                
+                div.querySelector('.file-info').onclick = () => {
+                    if(!isFolder) openFile(filename);
+                };
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('btn-new-file').onclick = () => {
+            const path = prompt('Enter new file path (e.g., src/app.js):');
+            if(path && !virtualFS[path]) {
+                virtualFS[path] = { content: '', language: getLanguage(path) };
+                initFileModel(path);
+                openFile(path);
+                renderSidebarFileList();
+            }
+        };
+
+        document.getElementById('btn-new-folder').onclick = () => {
+            const path = prompt('Enter new folder name:');
+            if(path && !virtualFS[path]) {
+                virtualFS[path] = { isFolder: true };
+                renderSidebarFileList();
+            }
+        };
+
+        window.deleteFile = (filename) => {
+            if(confirm(`Delete '${filename}'?`)) {
+                delete virtualFS[filename];
+                if(models[filename]) {
+                    models[filename].dispose();
+                    delete models[filename];
+                }
+                if(currentFile === filename) {
+                    const remaining = Object.keys(virtualFS).filter(k => !virtualFS[k].isFolder);
+                    if(remaining.length > 0) openFile(remaining[0]);
+                    else {
+                        currentFile = null;
+                        editor.setModel(null);
+                    }
+                }
+                renderTabs();
+                renderSidebarFileList();
+            }
+        };
+
+        window.downloadFile = (filename) => {
+            if (virtualFS[filename].isFolder) return;
+            const content = models[filename] ? models[filename].getValue() : virtualFS[filename].content;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename.split('/').pop();
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        document.getElementById('btn-upload').onclick = () => {
+            document.getElementById('file-upload-input').click();
+        };
+
+        document.getElementById('file-upload-input').onchange = (e) => {
+            for (const file of e.target.files) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const filename = "uploads/" + file.name; 
+                    virtualFS[filename] = { content: ev.target.result, language: getLanguage(filename) };
+                    initFileModel(filename);
+                    openFile(filename);
+                    renderSidebarFileList();
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        // Modal close buttons
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.onclick = (e) => {
+                document.getElementById(e.target.dataset.target).style.display = 'none';
+            };
+        });
+
+        // Theme Importer
+        const themeModal = document.getElementById('theme-modal');
+        document.getElementById('btn-import-theme').onclick = () => {
+            themeModal.style.display = 'flex';
+        };
+
+        document.getElementById('btn-apply-theme').onclick = () => {
+            const jsonText = document.getElementById('theme-json-textarea').value;
+            try {
+                const themeData = JSON.parse(jsonText);
+                
+                if (!themeData.base) themeData.base = 'vs-dark'; 
+                if (typeof themeData.inherit === 'undefined') themeData.inherit = true;
+                if (!themeData.rules) themeData.rules = [];
+                if (!themeData.colors) themeData.colors = {};
+
+                customThemeCount++;
+                const themeName = `custom-theme-${customThemeCount}`;
+                
+                monaco.editor.defineTheme(themeName, themeData);
+                
+                const option = document.createElement('option');
+                option.value = themeName;
+                option.textContent = themeData.name || `Custom Theme ${customThemeCount}`;
+                themeSelector.appendChild(option);
+                
+                themeSelector.value = themeName;
+                themeSelector.dispatchEvent(new Event('change'));
+                
+                themeModal.style.display = 'none';
+                document.getElementById('theme-json-textarea').value = '';
+                alert('Custom theme applied successfully!');
+
+            } catch (err) {
+                alert('Invalid JSON format. Please check your syntax.\nError: ' + err.message);
+            }
+        };
+    </script>
+</body>
+</html>
